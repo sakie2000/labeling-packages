@@ -1,0 +1,1249 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RA 라벨링 v6 — 10 질문 폼 (문구 명확화)</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "Apple SD Gothic Neo", "Hiragino Sans", sans-serif;
+    margin: 0; padding: 0;
+    background: #f5f5f5;
+    color: #222;
+  }
+  header {
+    background: #1E2761;
+    color: #fff;
+    padding: 12px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 6px rgba(0,0,0,.15);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  header h1 { margin: 0; font-size: 18px; }
+  header .progress { font-size: 14px; }
+  header .actions button {
+    background: #B4201E; color: #fff; border: none;
+    padding: 8px 14px; border-radius: 4px; cursor: pointer;
+    font-size: 13px; margin-left: 6px;
+  }
+  header .actions button:hover { opacity: 0.85; }
+  header .actions button.green { background: #2E7D32; }
+
+  .container {
+    max-width: 900px;
+    margin: 20px auto;
+    padding: 0 16px;
+  }
+
+  /* 이미지 영역 */
+  .image-section {
+    background: #fff;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 16px;
+    text-align: center;
+    box-shadow: 0 1px 4px rgba(0,0,0,.08);
+  }
+  .image-section .meta {
+    font-size: 12px; color: #777; margin-bottom: 8px;
+  }
+  .image-section img {
+    max-width: 100%;
+    max-height: 500px;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+  }
+
+  /* 질문 영역 */
+  .questions {
+    background: #fff;
+    border-radius: 8px;
+    padding: 18px 22px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.08);
+  }
+  .question {
+    margin-bottom: 22px;
+    padding-bottom: 14px;
+    border-bottom: 1px dashed #ddd;
+  }
+  .question:last-child { border-bottom: none; margin-bottom: 0; }
+  .question .qhead {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .question .qnum {
+    background: #1E2761; color: #fff;
+    padding: 4px 10px; border-radius: 4px;
+    font-size: 14px; font-weight: 700;
+    min-width: 44px; text-align: center;
+  }
+  .question .qtitle {
+    font-weight: 700; font-size: 16px; color: #1E2761;
+    line-height: 1.4;
+  }
+  .question .qtitle .red {
+    color: #B4201E;
+    font-weight: 700;
+  }
+  .options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-left: 54px;
+  }
+  .options label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 12px;
+    border: 1.5px solid #ccc;
+    border-radius: 6px;
+    cursor: pointer;
+    background: #fafafa;
+    font-size: 13px;
+    transition: all .15s;
+    user-select: none;
+  }
+  .options label:hover { border-color: #1E2761; background: #eef0fc; }
+  .options input { display: none; }
+  .options label.selected {
+    border-color: #1E2761; background: #1E2761; color: #fff;
+    font-weight: 700;
+  }
+  .options label.disabled {
+    opacity: 0.35; pointer-events: none;
+  }
+  .options.q1 label.selected { background: #6A1B9A; border-color: #6A1B9A; }
+  .options.q2 label.selected { background: #2E7D32; border-color: #2E7D32; }
+  .options.q3 label.selected { background: #00838F; border-color: #00838F; }
+  .options.q4 label.selected { background: #E67E22; border-color: #E67E22; }
+  .options.q5 label.selected { background: #B4201E; border-color: #B4201E; }
+  .options.q6 label.selected { background: #6D4C41; border-color: #6D4C41; }
+
+  .multi-hint {
+    margin-left: 54px;
+    font-size: 14px; color: #E67E22; font-weight: 700;
+    margin-bottom: 10px;
+    line-height: 1.7;
+  }
+  .multi-hint .chip {
+    display: inline-block;
+    background: #FFF3E0;
+    border: 1.8px solid #E67E22;
+    color: #B4201E;
+    padding: 3px 9px;
+    border-radius: 4px;
+    margin: 0 2px;
+    font-weight: 700;
+    font-size: 13px;
+  }
+
+  /* footer */
+  .footer-actions {
+    margin-top: 16px;
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  .footer-actions button {
+    flex: 1;
+    padding: 12px 16px;
+    font-size: 15px;
+    font-weight: 700;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  .btn-prev { background: #ccc; color: #333; }
+  .btn-next { background: #1E2761; color: #fff; }
+  .btn-skip { background: #fff; color: #B4201E; border: 2px solid #B4201E; }
+  .btn-next:hover, .btn-prev:hover, .btn-skip:hover { opacity: 0.85; }
+
+  /* category preview */
+  .category-preview {
+    background: #FFF8DC; padding: 10px 16px;
+    border-radius: 6px;
+    margin-top: 16px;
+    font-size: 13px;
+    border-left: 4px solid #E67E22;
+  }
+  .category-preview .label { color: #B4201E; font-weight: 700; margin-right: 6px; }
+
+  /* done */
+  .done-screen {
+    background: #fff;
+    border-radius: 8px;
+    padding: 40px 20px;
+    text-align: center;
+  }
+  .done-screen h2 { color: #2E7D32; }
+  .done-screen .download-btn {
+    background: #2E7D32; color: #fff;
+    border: none; padding: 12px 24px;
+    border-radius: 6px; font-size: 15px;
+    cursor: pointer; margin-top: 16px;
+  }
+
+  /* ===== 모바일 대응 (≤ 768px) ===== */
+  @media (max-width: 768px) {
+    header { flex-wrap: wrap; padding: 8px 12px; gap: 6px; }
+    header h1 { font-size: 14px; flex: 1 1 100%; }
+    header .progress { font-size: 12px; }
+    header .actions button { padding: 6px 10px; font-size: 11px; margin-left: 0; margin-right: 4px; }
+    .container { padding: 0 8px; margin: 12px auto; }
+    .intro { font-size: 13px !important; padding: 12px 14px !important; }
+    .image-section { padding: 10px; }
+    .image-section img { max-height: 320px; }
+    .questions { padding: 12px 14px; }
+    .question { margin-bottom: 16px; padding-bottom: 10px; }
+    .question .qtitle { font-size: 14px; line-height: 1.35; }
+    .question .qnum { font-size: 12px; padding: 3px 7px; min-width: 36px; }
+    .options { margin-left: 0; gap: 6px; }
+    .options label { padding: 8px 10px; font-size: 13px; flex: 1 1 auto; min-width: 0; }
+    .multi-hint { margin-left: 0; font-size: 12px; }
+    .multi-hint .chip { font-size: 11px; padding: 2px 6px; }
+    .footer-actions { flex-direction: column; gap: 6px; }
+    .footer-actions button { padding: 10px 12px; font-size: 14px; }
+    .category-preview { font-size: 12px; padding: 8px 12px; }
+  }
+
+</style>
+</head>
+<body>
+
+<header>
+  <h1>📸 RA 라벨링 v6 — 문구 명확화판</h1>
+  <div class="progress" id="progress">0 / 0</div>
+  <div class="actions">
+    <button class="green" onclick="downloadResults()">💾 결과 다운로드 (CSV)</button>
+    <button onclick="clearAll()">🗑️ 초기화</button>
+  </div>
+</header>
+
+
+<div class="intro" style="
+  max-width: 900px;
+  margin: 18px auto 0;
+  padding: 18px 22px;
+  background: #FFF8E1;
+  border-left: 6px solid #B4201E;
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(0,0,0,.08);
+  font-size: 14px;
+  line-height: 1.7;
+">
+  <div style="font-size:16px;font-weight:700;color:#1E2761;margin-bottom:8px;">
+    📖 작업 안내
+  </div>
+  <div style="color:#333;">
+    본 작업은 한양대학교 임보람 교수 연구실에서 연구 목적으로 진행하는
+    인스타그램 뷰티 인플루언서 사진 분류 작업입니다.
+    <br><br>
+    <strong>📝 작업 방법</strong>: 10개의 질문에 답변한 뒤 「저장하고 다음 →」 버튼을 누르면, 질문은 그대로 유지된 상태에서 이미지만 다음 사진으로 변경됩니다. 이후 동일한 질문에 이어서 응답해 주시면 되며, 사진 1장당 약 20~30초 정도 소요됩니다.<br><br>일부 문항은 이전 답변에 따라 조건부로 비활성화 (회색 표시) 될 수 있으며, 해당 경우에는 응답하지 않으셔도 됩니다. 모든 답변은 자동으로 저장됩니다.<br><br><strong style="color:#B4201E;">※ 모든 사진의 라벨링이 완료되면 마지막 화면에 「결과 다운로드 (CSV)」 버튼이 나타납니다. 해당 버튼을 한 번만 눌러 결과 파일을 전달해 주시면 됩니다.</strong>
+  </div>
+</div>
+
+<div class="container" id="main"></div>
+
+<script>
+const QUESTIONS = [
+  {
+    id: 'q1', num: 'Q1',
+    title: '이 사진의 주된 콘텐츠는 무엇인가요?',
+    options: ['뷰티 관련 제품·사용 중심', '일상·라이프스타일 중심', '둘 다 섞여 있음', '판정 불가'],
+    multi: false,
+    color: 'q1',
+    hintHtml: '<span class="chip">뷰티 관련 제품</span> = 코스메틱·스킨케어·여드름 패치 등 모두 포함'
+  },
+  {
+    id: 'q2', num: 'Q2',
+    title: '사진 안에 <strong>화장품이나 스킨케어 같은 뷰티 제품의 실물 (립스틱·아이섀도우·토너·크림 등)</strong> 이 몇 개 보이나요?<br><span class="red">※ 도포된 사진만 보이면 「없음」<br>※ 제품 일부만 보이면 「판정 불가」</span>',
+    options: ['1 개', '2 개 이상', '없음', '판정 불가'],
+    multi: false,
+    color: 'q4'
+  },
+  {
+    id: 'q3', num: 'Q3',
+    title: '사진에 뷰티 제품이 도포된 (피부나 입술 등에 발라진) 모습이 보이나요?',
+    options: ['1 개 도포', '2 개 이상 도포 (색깔 비교 등)', '도포 없음', '판정 불가'],
+    multi: false,
+    color: 'q5',
+    hintHtml: '제품을 손·팔·얼굴 등에 발라 색·텍스처를 보여주는 사진의 개수를 선택. 스킨케어·텍스처 견본도 「도포」 로 카운트.'
+  },
+  {
+    id: 'q4', num: 'Q4',
+    title: '도포된 부위는 어디인가요? <span class="red">해당되는 것 모두 선택</span>해 주세요.',
+    options: ['손·팔에 도포', '입술 도포', '눈가 도포', '볼·뺨 등 기타 부위 도포', '없음'],
+    multi: true,
+    color: 'q5',
+    conditional: { dep: 'q3', values: ['1 개 도포', '2 개 이상 도포 (색깔 비교 등)'] },
+    hintHtml: '메이크업된 얼굴에는 <span class="chip">눈가 도포</span> <span class="chip">입술 도포</span> <span class="chip">볼·뺨 도포</span> 모두 해당'
+  },
+  {
+    id: 'q5', num: 'Q5',
+    title: '인플루언서의 얼굴이 사진에 어떻게 노출되어 있나요?',
+    options: ['일부위만 보임 (부분적·절반 만)', '얼굴 전체 보임', '얼굴 없음'],
+    multi: false,
+    color: 'q2'
+  },
+  {
+    id: 'q6', num: 'Q6',
+    title: '얼굴의 어느 부위가 보이나요? <span class="red">해당되는 것 모두 선택</span>해 주세요.',
+    options: ['눈', '코', '입', '이마', '턱', '볼'],
+    multi: true,
+    color: 'q3',
+    conditional: { dep: 'q5', value: '일부위만 보임 (부분적·절반 만)' }
+  },
+  {
+    id: 'q7', num: 'Q7',
+    title: '인플루언서의 얼굴을 제외한 신체는 어디까지 노출되어 있나요? <span class="red">해당되는 것 모두 선택</span>해 주세요.',
+    options: ['손', '팔', '다리', '상반신 (어깨·가슴)', '전신', '신체 없음'],
+    multi: true,
+    color: 'q2'
+  },
+  {
+    id: 'q8', num: 'Q8',
+    title: '이미지 안에 글자(텍스트)가 보이나요? 어떤 종류의 글자인지 <span class="red">모두 선택</span>해 주세요.',
+    options: ['제품명', '브랜드명', '컬러 정보 (컬러명·번호 등)', '가격', '용량', '성분', '효능', '후기', '계정명 (@…)', '기타', '없음'],
+    multi: true,
+    color: 'q3'
+  },
+  {
+    id: 'q9', num: 'Q9',
+    title: '광고·협찬임을 한눈에 알 수 있는 시각 단서 (예: PR 박스, 협찬 로고·문구) 가 있나요?',
+    options: ['있음', '없음', '판정 불가'],
+    multi: false,
+    color: 'q4',
+    hintHtml: '브랜드 제품이 단순히 보이는 것이 아니라, <strong>광고·협찬임을 명확히 드러내는 요소</strong>가 있는 경우만 「있음」'
+  },
+  {
+    id: 'q10', num: 'Q10',
+    title: '위 답변들에 대한 확신 정도는? <span class="red">※ 자신의 능력이 아니라, <strong>사진이 얼마나 명확한지</strong>를 기준으로 답해 주세요</span>',
+    options: ['확신함 (사진이 명확해서 답이 분명)', '보통 (일부 답이 애매)', '모호 (사진 흐림·정보 부족 — 재검토 권장)'],
+    multi: false,
+    color: 'q5'
+  },
+];
+
+// 샘플 데이터 (HTML 内 직접 埋め込み — file:// CORS 문제 회피)
+const SAMPLES = [
+  {
+    "image": "CwM-J2FPEeN_7.jpg",
+    "post_id": "CwM-J2FPEeN",
+    "face_csv": 1
+  },
+  {
+    "image": "Ci_9IuHrX9X_2.jpg",
+    "post_id": "Ci_9IuHrX9X",
+    "face_csv": 1
+  },
+  {
+    "image": "B4vqFg6lik-_3.jpg",
+    "post_id": "B4vqFg6lik-",
+    "face_csv": 0
+  },
+  {
+    "image": "CLEHUcflE98_2.jpg",
+    "post_id": "CLEHUcflE98",
+    "face_csv": 1
+  },
+  {
+    "image": "DHzond4To42_1.jpg",
+    "post_id": "DHzond4To42",
+    "face_csv": 1
+  },
+  {
+    "image": "BuF6eTDl15W_1.jpg",
+    "post_id": "BuF6eTDl15W",
+    "face_csv": 0
+  },
+  {
+    "image": "DKcNXtBzXxK_11.jpg",
+    "post_id": "DKcNXtBzXxK",
+    "face_csv": 0
+  },
+  {
+    "image": "C45PVp9rVLG_1.jpg",
+    "post_id": "C45PVp9rVLG",
+    "face_csv": 0
+  },
+  {
+    "image": "Ch4K23ppgZ6_3.jpg",
+    "post_id": "Ch4K23ppgZ6",
+    "face_csv": 0
+  },
+  {
+    "image": "C9KnGj8yPWv_7.jpg",
+    "post_id": "C9KnGj8yPWv",
+    "face_csv": 0
+  },
+  {
+    "image": "C3NOP5fra0e_5.jpg",
+    "post_id": "C3NOP5fra0e",
+    "face_csv": 0
+  },
+  {
+    "image": "CDL_8ORDvOU_1.jpg",
+    "post_id": "CDL_8ORDvOU",
+    "face_csv": 1
+  },
+  {
+    "image": "CCiHv8VgVj7.jpg",
+    "post_id": "CCiHv8VgVj7",
+    "face_csv": 0
+  },
+  {
+    "image": "DLKXko3SplP_1.jpg",
+    "post_id": "DLKXko3SplP",
+    "face_csv": 0
+  },
+  {
+    "image": "CcOHo2HP-QH_7.jpg",
+    "post_id": "CcOHo2HP-QH",
+    "face_csv": 1
+  },
+  {
+    "image": "Cz-6FSFrYpA_3.jpg",
+    "post_id": "Cz-6FSFrYpA",
+    "face_csv": 1
+  },
+  {
+    "image": "CJqaCXghBfN_2.jpg",
+    "post_id": "CJqaCXghBfN",
+    "face_csv": 1
+  },
+  {
+    "image": "CZowXLmpg3H_7.jpg",
+    "post_id": "CZowXLmpg3H",
+    "face_csv": 0
+  },
+  {
+    "image": "BIWTyekgAv9.jpg",
+    "post_id": "BIWTyekgAv9",
+    "face_csv": 1
+  },
+  {
+    "image": "CK8qQ3mgYZx_6.jpg",
+    "post_id": "CK8qQ3mgYZx",
+    "face_csv": 1
+  },
+  {
+    "image": "ChjqE3orLxk_3.jpg",
+    "post_id": "ChjqE3orLxk",
+    "face_csv": 1
+  },
+  {
+    "image": "B90-uOdFO-B_3.jpg",
+    "post_id": "B90-uOdFO-B",
+    "face_csv": 1
+  },
+  {
+    "image": "CIVFSQplahB_3.jpg",
+    "post_id": "CIVFSQplahB",
+    "face_csv": 1
+  },
+  {
+    "image": "BkmFG1WFn7I_2.jpg",
+    "post_id": "BkmFG1WFn7I",
+    "face_csv": 0
+  },
+  {
+    "image": "CWpVguWFXuO_4.jpg",
+    "post_id": "CWpVguWFXuO",
+    "face_csv": 0
+  },
+  {
+    "image": "CtMYZRNLEdA_3.jpg",
+    "post_id": "CtMYZRNLEdA",
+    "face_csv": 0
+  },
+  {
+    "image": "CfvpR4wLtED_1.jpg",
+    "post_id": "CfvpR4wLtED",
+    "face_csv": 0
+  },
+  {
+    "image": "CpmHOsYrbyB_4.jpg",
+    "post_id": "CpmHOsYrbyB",
+    "face_csv": 1
+  },
+  {
+    "image": "BsUv9Vnlsol_2.jpg",
+    "post_id": "BsUv9Vnlsol",
+    "face_csv": 1
+  },
+  {
+    "image": "BxOmpQwFihE.jpg",
+    "post_id": "BxOmpQwFihE",
+    "face_csv": 0
+  },
+  {
+    "image": "Bhq8nFPHCrt.jpg",
+    "post_id": "Bhq8nFPHCrt",
+    "face_csv": 0
+  },
+  {
+    "image": "CKn71k5lQDm.jpg",
+    "post_id": "CKn71k5lQDm",
+    "face_csv": 1
+  },
+  {
+    "image": "CV5Q8Mdv2_s_1.jpg",
+    "post_id": "CV5Q8Mdv2_s",
+    "face_csv": 0
+  },
+  {
+    "image": "0E4jinvNRZ.jpg",
+    "post_id": "0E4jinvNRZ",
+    "face_csv": 1
+  },
+  {
+    "image": "BuiazCCFGqR_6.jpg",
+    "post_id": "BuiazCCFGqR",
+    "face_csv": 1
+  },
+  {
+    "image": "CLyMn_ql063_1.jpg",
+    "post_id": "CLyMn_ql063",
+    "face_csv": 0
+  },
+  {
+    "image": "CgMCThzrSNm_9.jpg",
+    "post_id": "CgMCThzrSNm",
+    "face_csv": 1
+  },
+  {
+    "image": "Cv6df6oPDnD_1.jpg",
+    "post_id": "Cv6df6oPDnD",
+    "face_csv": 1
+  },
+  {
+    "image": "CNzI00FgwjC_1.jpg",
+    "post_id": "CNzI00FgwjC",
+    "face_csv": 1
+  },
+  {
+    "image": "B9HPKdMgM9i_7.jpg",
+    "post_id": "B9HPKdMgM9i",
+    "face_csv": 1
+  },
+  {
+    "image": "B6r2K-QlxUA_3.jpg",
+    "post_id": "B6r2K-QlxUA",
+    "face_csv": 0
+  },
+  {
+    "image": "Cv4ePXxrFCC_4.jpg",
+    "post_id": "Cv4ePXxrFCC",
+    "face_csv": 0
+  },
+  {
+    "image": "B__pDR1gKbF.jpg",
+    "post_id": "B__pDR1gKbF",
+    "face_csv": 1
+  },
+  {
+    "image": "CoWStoKLwAs_5.jpg",
+    "post_id": "CoWStoKLwAs",
+    "face_csv": 1
+  },
+  {
+    "image": "CHC2FDXD5B8_2.jpg",
+    "post_id": "CHC2FDXD5B8",
+    "face_csv": 1
+  },
+  {
+    "image": "BsHDEEylYt8_1.jpg",
+    "post_id": "BsHDEEylYt8",
+    "face_csv": 0
+  },
+  {
+    "image": "B8tTq0rgsC2_2.jpg",
+    "post_id": "B8tTq0rgsC2",
+    "face_csv": 0
+  },
+  {
+    "image": "CUNwK-ZBDyB_2.jpg",
+    "post_id": "CUNwK-ZBDyB",
+    "face_csv": 0
+  },
+  {
+    "image": "CTpME1pFxRg_4.jpg",
+    "post_id": "CTpME1pFxRg",
+    "face_csv": 0
+  },
+  {
+    "image": "CIU1kdXgex7_2.jpg",
+    "post_id": "CIU1kdXgex7",
+    "face_csv": 1
+  },
+  {
+    "image": "B5dTGyvg5Y7_1.jpg",
+    "post_id": "B5dTGyvg5Y7",
+    "face_csv": 1
+  },
+  {
+    "image": "CKygvn0FkDT_3.jpg",
+    "post_id": "CKygvn0FkDT",
+    "face_csv": 0
+  },
+  {
+    "image": "p-hFP3vNRc.jpg",
+    "post_id": "p-hFP3vNRc",
+    "face_csv": 1
+  },
+  {
+    "image": "COGJeJBA8mL_6.jpg",
+    "post_id": "COGJeJBA8mL",
+    "face_csv": 1
+  },
+  {
+    "image": "ChybGrEP5CG_8.jpg",
+    "post_id": "ChybGrEP5CG",
+    "face_csv": 1
+  },
+  {
+    "image": "CbASRPJPeZV_5.jpg",
+    "post_id": "CbASRPJPeZV",
+    "face_csv": 0
+  },
+  {
+    "image": "DGQJfV2yB9P_4.jpg",
+    "post_id": "DGQJfV2yB9P",
+    "face_csv": 0
+  },
+  {
+    "image": "BuvKBTUlaWk_2.jpg",
+    "post_id": "BuvKBTUlaWk",
+    "face_csv": 0
+  },
+  {
+    "image": "CIuskiSFa6n_4.jpg",
+    "post_id": "CIuskiSFa6n",
+    "face_csv": 0
+  },
+  {
+    "image": "ClAlK1drH-9.jpg",
+    "post_id": "ClAlK1drH-9",
+    "face_csv": 1
+  },
+  {
+    "image": "CEI3pfTFTTO_2.jpg",
+    "post_id": "CEI3pfTFTTO",
+    "face_csv": 0
+  },
+  {
+    "image": "ChM2fghL2oQ_4.jpg",
+    "post_id": "ChM2fghL2oQ",
+    "face_csv": 0
+  },
+  {
+    "image": "C39EfL1yc94_4.jpg",
+    "post_id": "C39EfL1yc94",
+    "face_csv": 1
+  },
+  {
+    "image": "CgPQI0zrvWi_3.jpg",
+    "post_id": "CgPQI0zrvWi",
+    "face_csv": 1
+  },
+  {
+    "image": "Ctd4KpiJGvb_1.jpg",
+    "post_id": "Ctd4KpiJGvb",
+    "face_csv": 1
+  },
+  {
+    "image": "B3GR676AN5J_5.jpg",
+    "post_id": "B3GR676AN5J",
+    "face_csv": 1
+  },
+  {
+    "image": "CFPMur5AtWi_3.jpg",
+    "post_id": "CFPMur5AtWi",
+    "face_csv": 1
+  },
+  {
+    "image": "DA97IqQzwEx_3.jpg",
+    "post_id": "DA97IqQzwEx",
+    "face_csv": 0
+  },
+  {
+    "image": "CTouAgYlucM_1.jpg",
+    "post_id": "CTouAgYlucM",
+    "face_csv": 1
+  },
+  {
+    "image": "BMY8q-pAnZp.jpg",
+    "post_id": "BMY8q-pAnZp",
+    "face_csv": 1
+  },
+  {
+    "image": "CrcbxX4LOUI_4.jpg",
+    "post_id": "CrcbxX4LOUI",
+    "face_csv": 1
+  },
+  {
+    "image": "BXKuxUKAJxB_3.jpg",
+    "post_id": "BXKuxUKAJxB",
+    "face_csv": 1
+  },
+  {
+    "image": "Caj05tOlqrG_2.jpg",
+    "post_id": "Caj05tOlqrG",
+    "face_csv": 0
+  },
+  {
+    "image": "CYbeGXfJr6w.jpg",
+    "post_id": "CYbeGXfJr6w",
+    "face_csv": 0
+  },
+  {
+    "image": "Cwt3UGTxG8i_3.jpg",
+    "post_id": "Cwt3UGTxG8i",
+    "face_csv": 1
+  },
+  {
+    "image": "CMNC94JlzGN_6.jpg",
+    "post_id": "CMNC94JlzGN",
+    "face_csv": 0
+  },
+  {
+    "image": "C3ryL9ELDmN_1.jpg",
+    "post_id": "C3ryL9ELDmN",
+    "face_csv": 0
+  },
+  {
+    "image": "BzcboKHFfGE.jpg",
+    "post_id": "BzcboKHFfGE",
+    "face_csv": 0
+  },
+  {
+    "image": "CQQhrA2lH_3_3.jpg",
+    "post_id": "CQQhrA2lH_3",
+    "face_csv": 0
+  },
+  {
+    "image": "Bd2hFziFQeC.jpg",
+    "post_id": "Bd2hFziFQeC",
+    "face_csv": 0
+  },
+  {
+    "image": "CY8uPD7FTW1_4.jpg",
+    "post_id": "CY8uPD7FTW1",
+    "face_csv": 0
+  },
+  {
+    "image": "CqBNEkNP2XT_1.jpg",
+    "post_id": "CqBNEkNP2XT",
+    "face_csv": 1
+  },
+  {
+    "image": "BcQ_gcMhla4.jpg",
+    "post_id": "BcQ_gcMhla4",
+    "face_csv": 0
+  },
+  {
+    "image": "5iva2lvNYH.jpg",
+    "post_id": "5iva2lvNYH",
+    "face_csv": 1
+  },
+  {
+    "image": "CriugVor03v_2.jpg",
+    "post_id": "CriugVor03v",
+    "face_csv": 0
+  },
+  {
+    "image": "BeAzeFun939_1.jpg",
+    "post_id": "BeAzeFun939",
+    "face_csv": 0
+  },
+  {
+    "image": "C0VbSc3r6ae_1.jpg",
+    "post_id": "C0VbSc3r6ae",
+    "face_csv": 0
+  },
+  {
+    "image": "C66QTI-yYIe_1.jpg",
+    "post_id": "C66QTI-yYIe",
+    "face_csv": 0
+  },
+  {
+    "image": "B5cFGSugApX_4.jpg",
+    "post_id": "B5cFGSugApX",
+    "face_csv": 1
+  },
+  {
+    "image": "CtIA3pOBRor_2.jpg",
+    "post_id": "CtIA3pOBRor",
+    "face_csv": 0
+  },
+  {
+    "image": "Bsb7exYFD7e.jpg",
+    "post_id": "Bsb7exYFD7e",
+    "face_csv": 0
+  },
+  {
+    "image": "Bh84AgpAXov.jpg",
+    "post_id": "Bh84AgpAXov",
+    "face_csv": 0
+  },
+  {
+    "image": "DC3k1T1yy9m_4.jpg",
+    "post_id": "DC3k1T1yy9m",
+    "face_csv": 0
+  },
+  {
+    "image": "C3Ty15FyMA8_8.jpg",
+    "post_id": "C3Ty15FyMA8",
+    "face_csv": 1
+  },
+  {
+    "image": "CcI9XvgPNcx_4.jpg",
+    "post_id": "CcI9XvgPNcx",
+    "face_csv": 0
+  },
+  {
+    "image": "C6WXk3Qy41x_6.jpg",
+    "post_id": "C6WXk3Qy41x",
+    "face_csv": 0
+  },
+  {
+    "image": "CBYRat3Fgxn_6.jpg",
+    "post_id": "CBYRat3Fgxn",
+    "face_csv": 0
+  },
+  {
+    "image": "CfJB932r1VK_1.jpg",
+    "post_id": "CfJB932r1VK",
+    "face_csv": 1
+  },
+  {
+    "image": "DFabaylTura_5.jpg",
+    "post_id": "DFabaylTura",
+    "face_csv": 0
+  },
+  {
+    "image": "B74sse4FRlj_4.jpg",
+    "post_id": "B74sse4FRlj",
+    "face_csv": 1
+  }
+];
+let currentIdx = 0;
+let labels = {}; // v4 — {q1=콘텐츠, q2=제품개수, q3=swatch부위[], q4=얼굴노출, q5=얼굴부위[], q6=신체범위, q7=텍스트종류[], q8=정보그래픽[], q9=광고시각[], q10=신뢰도}
+
+const IMG_BASE = './images/';
+const SCHEMA_VERSION = 'v7_lab_feedback';  // v6 — Q2/Q3/Q5/Q8/Q10 문구 명확화 (xlsx 코드북 정합)
+
+function loadSamples() {
+  // 스키마 버전 체크 (구 q5/q6/q8/q9 데이터 자동 폐기)
+  const version = localStorage.getItem('labeling_schema_version');
+  if (version !== SCHEMA_VERSION) {
+    localStorage.removeItem('labeling_v2_results');
+    localStorage.removeItem('labeling_v2_idx');
+    localStorage.setItem('labeling_schema_version', SCHEMA_VERSION);
+  }
+  // localStorage 복원
+  const saved = localStorage.getItem('labeling_v2_results');
+  if (saved) labels = JSON.parse(saved);
+  const savedIdx = localStorage.getItem('labeling_v2_idx');
+  if (savedIdx) currentIdx = parseInt(savedIdx);
+  render();
+}
+
+function render() {
+  if (currentIdx >= SAMPLES.length) {
+    renderDone();
+    return;
+  }
+  const sample = SAMPLES[currentIdx];
+  const label = labels[sample.image] || {};
+
+  document.getElementById('progress').textContent =
+    `${currentIdx + 1} / ${SAMPLES.length}  (라벨링 완료: ${Object.keys(labels).length})`;
+
+  const main = document.getElementById('main');
+  main.innerHTML = '';
+
+  // image
+  const imgSec = document.createElement('div');
+  imgSec.className = 'image-section';
+  imgSec.innerHTML = `
+    <div class="meta">📷 ${sample.image} &nbsp; | &nbsp; post ID: ${sample.post_id}</div>
+    <img src="${IMG_BASE}${sample.image}" loading="lazy" onerror="this.style.display='none';this.nextSibling.style.display='block'">
+    <div style="display:none;padding:30px;background:#fee;border:1px solid #f99;color:#700;">
+      ⚠️ 이미지 로드 실패: ${IMG_BASE}${sample.image}<br>
+      이 HTML 은 Data/images 폴더 위치에서 1 단계 위 (thesis/) 에 두어 실행하세요.
+    </div>
+  `;
+  main.appendChild(imgSec);
+
+  // questions
+  const qSec = document.createElement('div');
+  qSec.className = 'questions';
+
+  QUESTIONS.forEach(q => {
+    // 조건부 활성/비활성
+    let disabled = false;
+    if (q.conditional) {
+      // value (단일) 또는 values (배열) 둘 다 지원
+      const allowed = q.conditional.values || [q.conditional.value];
+      disabled = !allowed.includes(label[q.conditional.dep]);
+    }
+    if (q.conditionalNot) {
+      const v = label[q.conditionalNot.dep];
+      if (q.conditionalNot.values.includes(v)) {
+        disabled = true;
+      }
+    }
+
+    const qDiv = document.createElement('div');
+    qDiv.className = 'question';
+    qDiv.style.opacity = disabled ? 0.35 : 1;
+
+    qDiv.innerHTML = `
+      <div class="qhead">
+        <span class="qnum">${q.num}</span>
+        <span class="qtitle">${q.title}</span>
+      </div>
+    `;
+
+    if (q.multi && (q.hint || q.hintHtml)) {
+      const hint = document.createElement('div');
+      hint.className = 'multi-hint';
+      if (q.hintHtml) {
+        hint.innerHTML = q.hintHtml;
+      } else {
+        hint.textContent = q.hint;
+      }
+      qDiv.appendChild(hint);
+    }
+
+    const opts = document.createElement('div');
+    opts.className = `options ${q.color}`;
+    q.options.forEach(opt => {
+      const isSelected = q.multi
+        ? (label[q.id] || []).includes(opt)
+        : (label[q.id] === opt);
+      const lbl = document.createElement('label');
+      if (isSelected) lbl.classList.add('selected');
+      if (disabled) lbl.classList.add('disabled');
+      lbl.innerHTML = `<input type="${q.multi ? 'checkbox' : 'radio'}" name="${q.id}" value="${opt}" ${isSelected ? 'checked' : ''}>${opt}`;
+      lbl.onclick = (e) => {
+        e.preventDefault();
+        if (disabled) return;
+        selectOption(q, opt, sample.image);
+      };
+      opts.appendChild(lbl);
+    });
+    qDiv.appendChild(opts);
+    qSec.appendChild(qDiv);
+  });
+
+  // 카테고리 추정 표시
+  const cat = inferCategory(label);
+  if (cat) {
+    const preview = document.createElement('div');
+    preview.className = 'category-preview';
+    preview.innerHTML = `<span class="label">추정 카테고리:</span> ${cat}`;
+    qSec.appendChild(preview);
+  }
+
+  main.appendChild(qSec);
+
+  // footer
+  const footer = document.createElement('div');
+  footer.className = 'footer-actions';
+  footer.innerHTML = `
+    <button class="btn-prev" onclick="goPrev()" ${currentIdx === 0 ? 'disabled style="opacity:0.4"' : ''}>← 이전</button>
+    <button class="btn-next" onclick="saveAndNext()">저장하고 다음 →</button>
+  `;
+  main.appendChild(footer);
+}
+
+function selectOption(q, value, imgKey) {
+  if (!labels[imgKey]) labels[imgKey] = {};
+  if (q.multi) {
+    const arr = labels[imgKey][q.id] || [];
+    if (value === '없음') {
+      // 「없음」 선택 시 다른 항목 해제
+      labels[imgKey][q.id] = arr.includes('없음') ? [] : ['없음'];
+    } else {
+      // 다른 항목 클릭 시 「없음」 자동 해제
+      const filtered = arr.filter(x => x !== '없음');
+      if (filtered.includes(value)) {
+        labels[imgKey][q.id] = filtered.filter(x => x !== value);
+      } else {
+        labels[imgKey][q.id] = [...filtered, value];
+      }
+    }
+  } else {
+    labels[imgKey][q.id] = value;
+    // v4: Q4(얼굴 노출)가 「일부만 보임」이 아닐 때 Q5(얼굴 부위) 초기화
+    if (q.id === 'q4' && value !== '일부만 보임') {
+      delete labels[imgKey].q5;
+    }
+  }
+  saveLocal();
+  render();
+}
+
+function inferCategory(label) {
+  // v6 결정 트리 — xlsx 코드북 우선순위에 정합
+  // 우선순위: Q3 색비교 → Q4+Q5 Makeup Look → Q5+Q2 Face+Product/Selfie → Q3 단순도포 부위별 → Q1 라이프스타일 → 제품 단독
+  if (!label.q1 && !label.q2 && !label.q3 && !label.q5) return null;
+
+  const q4 = label.q4 || [];
+  const partsCount = ['손·팔에 도포', '입술 도포', '눈가 도포', '볼·뺨 등 기타 부위 도포']
+    .filter(x => q4.includes(x)).length;
+  const q8 = label.q8 || [];
+  const textTypes = q8.filter(x => x !== '없음').length;
+
+  const isColorCompare = label.q3 === '색 비교 (2 가지 이상 색이 나란히)';
+  const isSimpleApply = label.q3 === '단순 도포 (1 가지 색만)';
+  const faceFull = label.q5 === '얼굴 전체 보임';
+  const faceNone = label.q5 === '얼굴 없음';
+  const faceParti = label.q5 === '일부위만 보임 (부분적·절반 만)';
+  const noProduct = label.q2 === '없음';
+  const oneProduct = label.q2 === '1 개';
+  const multiProduct = label.q2 === '2 개 이상';
+
+  // 1. Q3 = 색 비교 → #4 Color Comparison (최우선)
+  if (isColorCompare) return '#4 Color Comparison';
+
+  // 2. 얼굴 전체 + 다부위 도포 2+ → #10 Makeup Look
+  if (faceFull && partsCount >= 2) return '#10 Makeup Look';
+
+  // 3. 얼굴 전체 + 제품 있음 → #8 Face + Product
+  if (faceFull && !noProduct) return '#8 Face + Product';
+
+  // 4. 얼굴 전체 + 제품 없음 → #9 Selfie
+  if (faceFull && noProduct) return '#9 Selfie';
+
+  // 5. 단순 도포 → 부위별 분기
+  if (isSimpleApply && partsCount >= 1) {
+    if (q4.includes('눈가 도포')) return '#5 Eye Swatch';
+    if (q4.includes('입술 도포')) return '#6 Lip Swatch';
+    if (q4.includes('볼·뺨 등 기타 부위 도포')) return '#7 Body Swatch (볼·뺨)';
+    if (q4.includes('손·팔에 도포')) return '#7 Body Swatch (손·팔)';
+  }
+
+  // 6. 라이프스타일 (Q1)
+  if (label.q1 === '일상·라이프스타일 중심') {
+    return label.q7 === '전신' ? '#11 Lifestyle (전신)' : '#11 Lifestyle';
+  }
+
+  // 7. Infographic (보조) — 텍스트 풍부 + 제품 있음
+  if (textTypes >= 3 && !noProduct) return '#2 Infographic';
+
+  // 8. 제품 단독 (얼굴 없음 + 신체 없음)
+  if (faceNone && label.q7 === '신체 없음') {
+    if (oneProduct) return '#1 Single Product';
+    if (multiProduct) return '#3 Multi-Product';
+  }
+
+  // 9. 일부 얼굴 노출 — 아직 카테고리 없음, 보조 매개변수로만 활용
+  if (faceParti) return '판정 보류 (얼굴 일부 노출 — 보조 변수)';
+
+  if (label.q1 === '판정 불가') return '#12 Other';
+  return '판정 보류 (정보 부족)';
+}
+
+function saveLocal() {
+  localStorage.setItem('labeling_v2_results', JSON.stringify(labels));
+  localStorage.setItem('labeling_v2_idx', currentIdx);
+}
+
+function goPrev() {
+  if (currentIdx > 0) {
+    currentIdx--;
+    saveLocal();
+    render();
+  }
+}
+
+function goNext() {
+  currentIdx++;
+  saveLocal();
+  render();
+}
+
+function saveAndNext() {
+  const sample = SAMPLES[currentIdx];
+  const label = labels[sample.image] || {};
+  // 항상 검증 — 미답 항목이 있으면 진행 차단
+  // 단일 선택: Q1, Q2, Q3, Q5, Q7, Q9, Q10
+  // 복수 선택 (「없음」도 명시적 체크): Q8
+  // 조건부: Q4 (Q3 = 색깔비교/단순도포), Q6 (Q5 = 일부만 보임)
+  const missing = [];
+  if (!label.q1) missing.push('Q1');
+  if (!label.q2) missing.push('Q2');
+  if (!label.q3) missing.push('Q3');
+  if (!label.q5) missing.push('Q5');
+  if (!label.q7 || label.q7.length === 0) missing.push('Q7');
+  if (!label.q9) missing.push('Q9');
+  if (!label.q10) missing.push('Q10');
+  if (!label.q8 || label.q8.length === 0) missing.push('Q8');
+  const q4Needed = label.q3 === '1 개 도포' || label.q3 === '2 개 이상 도포 (색깔 비교 등)';
+  if (q4Needed && (!label.q4 || label.q4.length === 0)) missing.push('Q4');
+  const q6Needed = label.q5 === '일부위만 보임 (부분적·절반 만)';
+  if (q6Needed && (!label.q6 || label.q6.length === 0)) missing.push('Q6');
+
+  if (missing.length > 0) {
+    alert('⚠️ ' + missing.join('·') + ' 에 답하지 않았습니다. 모든 항목에 답해 주세요.');
+    return;
+  }
+  goNext();
+}
+
+function renderDone() {
+  document.getElementById('progress').textContent = `완료 ${Object.keys(labels).length} / ${SAMPLES.length}`;
+  const main = document.getElementById('main');
+  main.innerHTML = `
+    <div class="done-screen">
+      <h2>🎉 모든 사진 라벨링 완료!</h2>
+      <p>${Object.keys(labels).length} 매를 라벨링 했습니다.</p>
+      <button class="download-btn" onclick="downloadResults()">💾 결과 다운로드 (CSV)</button>
+      <button class="download-btn" style="background:#666;margin-left:8px" onclick="currentIdx=0;render()">← 처음부터 다시 보기</button>
+    </div>
+  `;
+}
+
+function downloadResults() {
+  if (Object.keys(labels).length === 0) {
+    alert('아직 라벨이 없습니다.');
+    return;
+  }
+  // v7 컬럼 (10 질문)
+  const rows = [['image', 'post_id', 'face_csv',
+    'q1_content_type', 'q2_product_count', 'q3_swatch_type',
+    'q4_swatch_parts', 'q5_face_exposure', 'q6_face_parts',
+    'q7_body_exposure', 'q8_text_types', 'q9_ad_cue', 'q10_confidence',
+    'inferred_category']];
+  SAMPLES.forEach(s => {
+    const l = labels[s.image];
+    if (!l) return;
+    rows.push([
+      s.image, s.post_id, s.face_csv,
+      l.q1 || '',
+      l.q2 || '',
+      l.q3 || '',
+      (l.q4 || []).join(';'),
+      l.q5 || '',
+      (l.q6 || []).join(';'),
+      (l.q7 || []).join(';'),
+      (l.q8 || []).join(';'),
+      l.q9 || '',
+      l.q10 || '',
+      (typeof inferCategory === 'function' ? inferCategory(l) : '') || ''
+    ]);
+  });
+  const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
+  const filename = `labeling_${new Date().toISOString().slice(0,10)}_${Object.keys(labels).length}매.csv`;
+
+  // 1. 일반 다운로드 시도 (PC + 모던 모바일)
+  try {
+    const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.style.display = 'none';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => {
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }, 100);
+  } catch (e) {
+    console.error('Blob 다운로드 실패:', e);
+  }
+
+  // 2. 모바일 대안 — CSV 텍스트 모달 (복사 + 공유 가능)
+  showCsvModal(csv, filename);
+}
+
+function showCsvModal(csv, filename) {
+  // 기존 모달 제거
+  const old = document.getElementById('csv-modal');
+  if (old) old.remove();
+
+  const modal = document.createElement('div');
+  modal.id = 'csv-modal';
+  modal.style.cssText = `
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,.7); z-index: 9999;
+    display: flex; align-items: center; justify-content: center;
+    padding: 20px;
+  `;
+  modal.innerHTML = `
+    <div style="background:#fff;border-radius:10px;padding:20px;max-width:600px;width:100%;max-height:90vh;display:flex;flex-direction:column;">
+      <h3 style="margin:0 0 12px;color:#1E2761;">📥 결과 다운로드</h3>
+      <p style="margin:0 0 12px;font-size:14px;color:#555;">
+        다운로드가 자동 시작됩니다. <strong>안 되면</strong> 아래 내용을 길게 눌러 복사하거나, 「공유」 버튼을 사용해 주세요.
+      </p>
+      <div style="margin:0 0 12px;font-size:13px;color:#B4201E;">
+        💾 파일명: <code style="background:#f5f5f5;padding:2px 6px;border-radius:3px;">${filename}</code><br>
+        📊 라벨링 완료: ${Object.keys(labels).length} 매
+      </div>
+      <textarea id="csv-text" readonly style="flex:1;width:100%;font-family:monospace;font-size:11px;padding:8px;border:1px solid #ccc;border-radius:6px;min-height:200px;">${csv}</textarea>
+      <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">
+        <button onclick="copyCsv()" style="flex:1;padding:10px;background:#2E7D32;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:700;">📋 클립보드 복사</button>
+        <button onclick="shareCsv()" style="flex:1;padding:10px;background:#1E2761;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:700;">📤 공유</button>
+        <button onclick="document.getElementById('csv-modal').remove()" style="flex:0 0 auto;padding:10px 16px;background:#ccc;color:#333;border:none;border-radius:6px;cursor:pointer;">닫기</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+  window.__csvData = { text: csv, filename: filename };
+}
+
+function copyCsv() {
+  const ta = document.getElementById('csv-text');
+  ta.select();
+  ta.setSelectionRange(0, 99999);
+  try {
+    navigator.clipboard.writeText(window.__csvData.text).then(
+      () => alert('✅ 클립보드 복사 완료. 카톡 등에 붙여넣기 가능.'),
+      () => { document.execCommand('copy'); alert('✅ 복사 완료.'); }
+    );
+  } catch (e) {
+    document.execCommand('copy');
+    alert('✅ 복사 완료.');
+  }
+}
+
+function shareCsv() {
+  if (navigator.share) {
+    const blob = new Blob(['\ufeff' + window.__csvData.text], { type: 'text/csv' });
+    const file = new File([blob], window.__csvData.filename, { type: 'text/csv' });
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      navigator.share({ files: [file], title: '라벨링 결과' }).catch(()=>{});
+    } else {
+      navigator.share({ title: '라벨링 결과', text: window.__csvData.text.slice(0, 1000) + '...' }).catch(()=>{});
+    }
+  } else {
+    alert('이 브라우저는 공유 기능을 지원하지 않습니다. 「클립보드 복사」 를 이용해 주세요.');
+  }
+}
+
+function clearAll() {
+  if (!confirm('모든 라벨을 삭제하시겠습니까?')) return;
+  labels = {};
+  currentIdx = 0;
+  localStorage.removeItem('labeling_v2_results');
+  localStorage.removeItem('labeling_v2_idx');
+  render();
+}
+
+loadSamples();
+</script>
+
+</body>
+</html>

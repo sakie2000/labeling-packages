@@ -1,0 +1,2749 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RA 라벨링 v6 — 10 질문 폼 (문구 명확화)</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "Apple SD Gothic Neo", "Hiragino Sans", sans-serif;
+    margin: 0; padding: 0;
+    background: #f5f5f5;
+    color: #222;
+  }
+  header {
+    background: #1E2761;
+    color: #fff;
+    padding: 12px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 6px rgba(0,0,0,.15);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  header h1 { margin: 0; font-size: 18px; }
+  header .progress { font-size: 14px; }
+  header .actions button {
+    background: #B4201E; color: #fff; border: none;
+    padding: 8px 14px; border-radius: 4px; cursor: pointer;
+    font-size: 13px; margin-left: 6px;
+  }
+  header .actions button:hover { opacity: 0.85; }
+  header .actions button.green { background: #2E7D32; }
+
+  .container {
+    max-width: 900px;
+    margin: 20px auto;
+    padding: 0 16px;
+  }
+
+  /* 이미지 영역 */
+  .image-section {
+    background: #fff;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 16px;
+    text-align: center;
+    box-shadow: 0 1px 4px rgba(0,0,0,.08);
+  }
+  .image-section .meta {
+    font-size: 12px; color: #777; margin-bottom: 8px;
+  }
+  .image-section img {
+    max-width: 100%;
+    max-height: 500px;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+  }
+
+  /* 질문 영역 */
+  .questions {
+    background: #fff;
+    border-radius: 8px;
+    padding: 18px 22px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.08);
+  }
+  .question {
+    margin-bottom: 22px;
+    padding-bottom: 14px;
+    border-bottom: 1px dashed #ddd;
+  }
+  .question:last-child { border-bottom: none; margin-bottom: 0; }
+  .question .qhead {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .question .qnum {
+    background: #1E2761; color: #fff;
+    padding: 4px 10px; border-radius: 4px;
+    font-size: 14px; font-weight: 700;
+    min-width: 44px; text-align: center;
+  }
+  .question .qtitle {
+    font-weight: 700; font-size: 16px; color: #1E2761;
+    line-height: 1.4;
+  }
+  .question .qtitle .red {
+    color: #B4201E;
+    font-weight: 700;
+  }
+  .options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-left: 54px;
+  }
+  .options label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 12px;
+    border: 1.5px solid #ccc;
+    border-radius: 6px;
+    cursor: pointer;
+    background: #fafafa;
+    font-size: 13px;
+    transition: all .15s;
+    user-select: none;
+  }
+  .options label:hover { border-color: #1E2761; background: #eef0fc; }
+  .options input { display: none; }
+  .options label.selected {
+    border-color: #1E2761; background: #1E2761; color: #fff;
+    font-weight: 700;
+  }
+  .options label.disabled {
+    opacity: 0.35; pointer-events: none;
+  }
+  .options.q1 label.selected { background: #6A1B9A; border-color: #6A1B9A; }
+  .options.q2 label.selected { background: #2E7D32; border-color: #2E7D32; }
+  .options.q3 label.selected { background: #00838F; border-color: #00838F; }
+  .options.q4 label.selected { background: #E67E22; border-color: #E67E22; }
+  .options.q5 label.selected { background: #B4201E; border-color: #B4201E; }
+  .options.q6 label.selected { background: #6D4C41; border-color: #6D4C41; }
+
+  .multi-hint {
+    margin-left: 54px;
+    font-size: 14px; color: #E67E22; font-weight: 700;
+    margin-bottom: 10px;
+    line-height: 1.7;
+  }
+  .multi-hint .chip {
+    display: inline-block;
+    background: #FFF3E0;
+    border: 1.8px solid #E67E22;
+    color: #B4201E;
+    padding: 3px 9px;
+    border-radius: 4px;
+    margin: 0 2px;
+    font-weight: 700;
+    font-size: 13px;
+  }
+
+  /* footer */
+  .footer-actions {
+    margin-top: 16px;
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  .footer-actions button {
+    flex: 1;
+    padding: 12px 16px;
+    font-size: 15px;
+    font-weight: 700;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  .btn-prev { background: #ccc; color: #333; }
+  .btn-next { background: #1E2761; color: #fff; }
+  .btn-skip { background: #fff; color: #B4201E; border: 2px solid #B4201E; }
+  .btn-next:hover, .btn-prev:hover, .btn-skip:hover { opacity: 0.85; }
+
+  /* category preview */
+  .category-preview {
+    background: #FFF8DC; padding: 10px 16px;
+    border-radius: 6px;
+    margin-top: 16px;
+    font-size: 13px;
+    border-left: 4px solid #E67E22;
+  }
+  .category-preview .label { color: #B4201E; font-weight: 700; margin-right: 6px; }
+
+  /* done */
+  .done-screen {
+    background: #fff;
+    border-radius: 8px;
+    padding: 40px 20px;
+    text-align: center;
+  }
+  .done-screen h2 { color: #2E7D32; }
+  .done-screen .download-btn {
+    background: #2E7D32; color: #fff;
+    border: none; padding: 12px 24px;
+    border-radius: 6px; font-size: 15px;
+    cursor: pointer; margin-top: 16px;
+  }
+
+  /* ===== 모바일 대응 (≤ 768px) ===== */
+  @media (max-width: 768px) {
+    header { flex-wrap: wrap; padding: 8px 12px; gap: 6px; }
+    header h1 { font-size: 14px; flex: 1 1 100%; }
+    header .progress { font-size: 12px; }
+    header .actions button { padding: 6px 10px; font-size: 11px; margin-left: 0; margin-right: 4px; }
+    .container { padding: 0 8px; margin: 12px auto; }
+    .intro { font-size: 13px !important; padding: 12px 14px !important; }
+    .image-section { padding: 10px; }
+    .image-section img { max-height: 320px; }
+    .questions { padding: 12px 14px; }
+    .question { margin-bottom: 16px; padding-bottom: 10px; }
+    .question .qtitle { font-size: 14px; line-height: 1.35; }
+    .question .qnum { font-size: 12px; padding: 3px 7px; min-width: 36px; }
+    .options { margin-left: 0; gap: 6px; }
+    .options label { padding: 8px 10px; font-size: 13px; flex: 1 1 auto; min-width: 0; }
+    .multi-hint { margin-left: 0; font-size: 12px; }
+    .multi-hint .chip { font-size: 11px; padding: 2px 6px; }
+    .footer-actions { flex-direction: column; gap: 6px; }
+    .footer-actions button { padding: 10px 12px; font-size: 14px; }
+    .category-preview { font-size: 12px; padding: 8px 12px; }
+  }
+
+</style>
+</head>
+<body>
+
+<header>
+  <h1>📸 RA 라벨링 v6 — 문구 명확화판</h1>
+  <div class="progress" id="progress">0 / 0</div>
+  <div class="actions">
+    <button class="green" onclick="downloadResults()">💾 결과 다운로드 (CSV)</button>
+    <button onclick="clearAll()">🗑️ 초기화</button>
+  </div>
+</header>
+
+
+<div class="intro" style="
+  max-width: 900px;
+  margin: 18px auto 0;
+  padding: 18px 22px;
+  background: #FFF8E1;
+  border-left: 6px solid #B4201E;
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(0,0,0,.08);
+  font-size: 14px;
+  line-height: 1.7;
+">
+  <div style="font-size:16px;font-weight:700;color:#1E2761;margin-bottom:8px;">
+    📖 작업 안내
+  </div>
+  <div style="color:#333;">
+    본 작업은 한양대학교 임보람 교수 연구실에서 연구 목적으로 진행하는
+    인스타그램 뷰티 인플루언서 사진 분류 작업입니다.
+    <br><br>
+    <strong>📝 작업 방법</strong>: 10개의 질문에 답변한 뒤 「저장하고 다음 →」 버튼을 누르면, 질문은 그대로 유지된 상태에서 이미지만 다음 사진으로 변경됩니다. 이후 동일한 질문에 이어서 응답해 주시면 되며, 사진 1장당 약 20~30초 정도 소요됩니다.<br><br>일부 문항은 이전 답변에 따라 조건부로 비활성화 (회색 표시) 될 수 있으며, 해당 경우에는 응답하지 않으셔도 됩니다. 모든 답변은 자동으로 저장됩니다.<br><br><strong style="color:#B4201E;">※ 모든 사진의 라벨링이 완료되면 마지막 화면에 「결과 다운로드 (CSV)」 버튼이 나타납니다. 해당 버튼을 한 번만 눌러 결과 파일을 전달해 주시면 됩니다.</strong>
+  </div>
+</div>
+
+<div class="container" id="main"></div>
+
+<script>
+const QUESTIONS = [
+  {
+    id: 'q1', num: 'Q1',
+    title: '이 사진의 주된 콘텐츠는 무엇인가요?',
+    options: ['뷰티 관련 제품·사용 중심', '일상·라이프스타일 중심', '둘 다 섞여 있음', '판정 불가'],
+    multi: false,
+    color: 'q1',
+    hintHtml: '<span class="chip">뷰티 관련 제품</span> = 코스메틱·스킨케어·여드름 패치 등 모두 포함'
+  },
+  {
+    id: 'q2', num: 'Q2',
+    title: '사진 안에 <strong>화장품이나 스킨케어 같은 뷰티 제품의 실물 (립스틱·아이섀도우·토너·크림 등)</strong> 이 몇 개 보이나요?<br><span class="red">※ 도포된 사진만 보이면 「없음」<br>※ 제품 일부만 보이면 「판정 불가」</span>',
+    options: ['1 개', '2 개 이상', '없음', '판정 불가'],
+    multi: false,
+    color: 'q4'
+  },
+  {
+    id: 'q3', num: 'Q3',
+    title: '사진에 뷰티 제품이 도포된 (피부나 입술 등에 발라진) 모습이 보이나요?',
+    options: ['1 개 도포', '2 개 이상 도포 (색깔 비교 등)', '도포 없음', '판정 불가'],
+    multi: false,
+    color: 'q5',
+    hintHtml: '제품을 손·팔·얼굴 등에 발라 색·텍스처를 보여주는 사진의 개수를 선택. 스킨케어·텍스처 견본도 「도포」 로 카운트.'
+  },
+  {
+    id: 'q4', num: 'Q4',
+    title: '도포된 부위는 어디인가요? <span class="red">해당되는 것 모두 선택</span>해 주세요.',
+    options: ['손·팔에 도포', '입술 도포', '눈가 도포', '볼·뺨 등 기타 부위 도포', '없음'],
+    multi: true,
+    color: 'q5',
+    conditional: { dep: 'q3', values: ['1 개 도포', '2 개 이상 도포 (색깔 비교 등)'] },
+    hintHtml: '메이크업된 얼굴에는 <span class="chip">눈가 도포</span> <span class="chip">입술 도포</span> <span class="chip">볼·뺨 도포</span> 모두 해당'
+  },
+  {
+    id: 'q5', num: 'Q5',
+    title: '인플루언서의 얼굴이 사진에 어떻게 노출되어 있나요?',
+    options: ['일부위만 보임 (부분적·절반 만)', '얼굴 전체 보임', '얼굴 없음'],
+    multi: false,
+    color: 'q2'
+  },
+  {
+    id: 'q6', num: 'Q6',
+    title: '얼굴의 어느 부위가 보이나요? <span class="red">해당되는 것 모두 선택</span>해 주세요.',
+    options: ['눈', '코', '입', '이마', '턱', '볼'],
+    multi: true,
+    color: 'q3',
+    conditional: { dep: 'q5', value: '일부위만 보임 (부분적·절반 만)' }
+  },
+  {
+    id: 'q7', num: 'Q7',
+    title: '인플루언서의 얼굴을 제외한 신체는 어디까지 노출되어 있나요? <span class="red">해당되는 것 모두 선택</span>해 주세요.',
+    options: ['손', '팔', '다리', '상반신 (어깨·가슴)', '전신', '신체 없음'],
+    multi: true,
+    color: 'q2'
+  },
+  {
+    id: 'q8', num: 'Q8',
+    title: '이미지 안에 글자(텍스트)가 보이나요? 어떤 종류의 글자인지 <span class="red">모두 선택</span>해 주세요.',
+    options: ['제품명', '브랜드명', '컬러 정보 (컬러명·번호 등)', '가격', '용량', '성분', '효능', '후기', '계정명 (@…)', '기타', '없음'],
+    multi: true,
+    color: 'q3'
+  },
+  {
+    id: 'q9', num: 'Q9',
+    title: '광고·협찬임을 한눈에 알 수 있는 시각 단서 (예: PR 박스, 협찬 로고·문구) 가 있나요?',
+    options: ['있음', '없음', '판정 불가'],
+    multi: false,
+    color: 'q4',
+    hintHtml: '브랜드 제품이 단순히 보이는 것이 아니라, <strong>광고·협찬임을 명확히 드러내는 요소</strong>가 있는 경우만 「있음」'
+  },
+  {
+    id: 'q10', num: 'Q10',
+    title: '위 답변들에 대한 확신 정도는? <span class="red">※ 자신의 능력이 아니라, <strong>사진이 얼마나 명확한지</strong>를 기준으로 답해 주세요</span>',
+    options: ['확신함 (사진이 명확해서 답이 분명)', '보통 (일부 답이 애매)', '모호 (사진 흐림·정보 부족 — 재검토 권장)'],
+    multi: false,
+    color: 'q5'
+  },
+];
+
+// 샘플 데이터 (HTML 内 직접 埋め込み — file:// CORS 문제 회피)
+const SAMPLES = [
+  {
+    "image": "Bn8-_O8hs_l_2.jpg",
+    "post_id": "Bn8-_O8hs_l",
+    "face_csv": 1
+  },
+  {
+    "image": "C1HBEO5BGxF_6.jpg",
+    "post_id": "C1HBEO5BGxF",
+    "face_csv": 1
+  },
+  {
+    "image": "BaG5P-GBabI_2.jpg",
+    "post_id": "BaG5P-GBabI",
+    "face_csv": 1
+  },
+  {
+    "image": "C-Xl8b9TM8O_6.jpg",
+    "post_id": "C-Xl8b9TM8O",
+    "face_csv": 0
+  },
+  {
+    "image": "CEYL118FANE_2.jpg",
+    "post_id": "CEYL118FANE",
+    "face_csv": 0
+  },
+  {
+    "image": "DE2EMx4hZvU_2.jpg",
+    "post_id": "DE2EMx4hZvU",
+    "face_csv": 0
+  },
+  {
+    "image": "BO1y0mShllG.jpg",
+    "post_id": "BO1y0mShllG",
+    "face_csv": 1
+  },
+  {
+    "image": "CSVzfsQFJm9_8.jpg",
+    "post_id": "CSVzfsQFJm9",
+    "face_csv": 0
+  },
+  {
+    "image": "B4xBdWyA_1r_2.jpg",
+    "post_id": "B4xBdWyA_1r",
+    "face_csv": 1
+  },
+  {
+    "image": "DFeZrnNT95n_2.jpg",
+    "post_id": "DFeZrnNT95n",
+    "face_csv": 0
+  },
+  {
+    "image": "CeOKlB7LLZk_4.jpg",
+    "post_id": "CeOKlB7LLZk",
+    "face_csv": 1
+  },
+  {
+    "image": "Bzf8dawBVIw.jpg",
+    "post_id": "Bzf8dawBVIw",
+    "face_csv": 1
+  },
+  {
+    "image": "CJnyK8ZFeAE_1.jpg",
+    "post_id": "CJnyK8ZFeAE",
+    "face_csv": 1
+  },
+  {
+    "image": "C9HMq7sy2TJ_8.jpg",
+    "post_id": "C9HMq7sy2TJ",
+    "face_csv": 0
+  },
+  {
+    "image": "CypuSlRP75N_7.jpg",
+    "post_id": "CypuSlRP75N",
+    "face_csv": 1
+  },
+  {
+    "image": "CSfrd6AlHSh_6.jpg",
+    "post_id": "CSfrd6AlHSh",
+    "face_csv": 1
+  },
+  {
+    "image": "CxAIOFLrkNE.jpg",
+    "post_id": "CxAIOFLrkNE",
+    "face_csv": 1
+  },
+  {
+    "image": "BmJHehaBKoZ_1.jpg",
+    "post_id": "BmJHehaBKoZ",
+    "face_csv": 1
+  },
+  {
+    "image": "CC3HoNylJLx_2.jpg",
+    "post_id": "CC3HoNylJLx",
+    "face_csv": 0
+  },
+  {
+    "image": "C8t_RACyk6R_3.jpg",
+    "post_id": "C8t_RACyk6R",
+    "face_csv": 1
+  },
+  {
+    "image": "BgBdAcChJa4.jpg",
+    "post_id": "BgBdAcChJa4",
+    "face_csv": 1
+  },
+  {
+    "image": "CC5GS-OjLeN_2.jpg",
+    "post_id": "CC5GS-OjLeN",
+    "face_csv": 1
+  },
+  {
+    "image": "CnUDPifJsI5_1.jpg",
+    "post_id": "CnUDPifJsI5",
+    "face_csv": 1
+  },
+  {
+    "image": "C3AO3oRPVGD_1.jpg",
+    "post_id": "C3AO3oRPVGD",
+    "face_csv": 1
+  },
+  {
+    "image": "CyqOiz8y0B9_7.jpg",
+    "post_id": "CyqOiz8y0B9",
+    "face_csv": 1
+  },
+  {
+    "image": "BVynE77AzGJ.jpg",
+    "post_id": "BVynE77AzGJ",
+    "face_csv": 1
+  },
+  {
+    "image": "CTjy2JoFxq7_1.jpg",
+    "post_id": "CTjy2JoFxq7",
+    "face_csv": 0
+  },
+  {
+    "image": "CDnHgJClD7Y_2.jpg",
+    "post_id": "CDnHgJClD7Y",
+    "face_csv": 1
+  },
+  {
+    "image": "C4sf6LoS3IU_1.jpg",
+    "post_id": "C4sf6LoS3IU",
+    "face_csv": 0
+  },
+  {
+    "image": "CcsCTxELiI7_6.jpg",
+    "post_id": "CcsCTxELiI7",
+    "face_csv": 1
+  },
+  {
+    "image": "CkBCaOxS26i_5.jpg",
+    "post_id": "CkBCaOxS26i",
+    "face_csv": 0
+  },
+  {
+    "image": "C6z15_Ey8xo_4.jpg",
+    "post_id": "C6z15_Ey8xo",
+    "face_csv": 1
+  },
+  {
+    "image": "DMhfqpkzyAB_1.jpg",
+    "post_id": "DMhfqpkzyAB",
+    "face_csv": 0
+  },
+  {
+    "image": "CTUGX5vFGVj_6.jpg",
+    "post_id": "CTUGX5vFGVj",
+    "face_csv": 1
+  },
+  {
+    "image": "ChcFBKhr9N8_2.jpg",
+    "post_id": "ChcFBKhr9N8",
+    "face_csv": 0
+  },
+  {
+    "image": "C_h_lMAT-md_2.jpg",
+    "post_id": "C_h_lMAT-md",
+    "face_csv": 0
+  },
+  {
+    "image": "DIx9DBdTvXD_1.jpg",
+    "post_id": "DIx9DBdTvXD",
+    "face_csv": 0
+  },
+  {
+    "image": "CtRD76dr6Ok_1.jpg",
+    "post_id": "CtRD76dr6Ok",
+    "face_csv": 0
+  },
+  {
+    "image": "CWA_dw2PNUx_7.jpg",
+    "post_id": "CWA_dw2PNUx",
+    "face_csv": 0
+  },
+  {
+    "image": "DDEanLHzWLy_4.jpg",
+    "post_id": "DDEanLHzWLy",
+    "face_csv": 0
+  },
+  {
+    "image": "CVXjqwJFpe8_7.jpg",
+    "post_id": "CVXjqwJFpe8",
+    "face_csv": 0
+  },
+  {
+    "image": "DDt3R0iBEX__6.jpg",
+    "post_id": "DDt3R0iBEX_",
+    "face_csv": 0
+  },
+  {
+    "image": "CYgQ6gulXGZ.jpg",
+    "post_id": "CYgQ6gulXGZ",
+    "face_csv": 1
+  },
+  {
+    "image": "CRsbTObMTZa.jpg",
+    "post_id": "CRsbTObMTZa",
+    "face_csv": 1
+  },
+  {
+    "image": "CPfrv9ilDLX_4.jpg",
+    "post_id": "CPfrv9ilDLX",
+    "face_csv": 0
+  },
+  {
+    "image": "B6IeQWFlyN5_2.jpg",
+    "post_id": "B6IeQWFlyN5",
+    "face_csv": 0
+  },
+  {
+    "image": "CJqDjsXFULA_4.jpg",
+    "post_id": "CJqDjsXFULA",
+    "face_csv": 1
+  },
+  {
+    "image": "C7EGyn_h9NX_1.jpg",
+    "post_id": "C7EGyn_h9NX",
+    "face_csv": 0
+  },
+  {
+    "image": "CRvrs8wFTeF_1.jpg",
+    "post_id": "CRvrs8wFTeF",
+    "face_csv": 0
+  },
+  {
+    "image": "Ccu1pSSpZ-C_5.jpg",
+    "post_id": "Ccu1pSSpZ-C",
+    "face_csv": 0
+  },
+  {
+    "image": "CX8e_tClsgj_4.jpg",
+    "post_id": "CX8e_tClsgj",
+    "face_csv": 0
+  },
+  {
+    "image": "CpFo2YfreRO_4.jpg",
+    "post_id": "CpFo2YfreRO",
+    "face_csv": 0
+  },
+  {
+    "image": "DASRj76Tppc_4.jpg",
+    "post_id": "DASRj76Tppc",
+    "face_csv": 1
+  },
+  {
+    "image": "C1wEwctrKwg_2.jpg",
+    "post_id": "C1wEwctrKwg",
+    "face_csv": 0
+  },
+  {
+    "image": "CbryhPJLqsV_7.jpg",
+    "post_id": "CbryhPJLqsV",
+    "face_csv": 0
+  },
+  {
+    "image": "BZ32af6AKY9.jpg",
+    "post_id": "BZ32af6AKY9",
+    "face_csv": 1
+  },
+  {
+    "image": "CnPDxovreDX_9.jpg",
+    "post_id": "CnPDxovreDX",
+    "face_csv": 0
+  },
+  {
+    "image": "CvKHKblrQ3Q_9.jpg",
+    "post_id": "CvKHKblrQ3Q",
+    "face_csv": 0
+  },
+  {
+    "image": "CPGPSFJlqZU_5.jpg",
+    "post_id": "CPGPSFJlqZU",
+    "face_csv": 1
+  },
+  {
+    "image": "BLNn6K-gzE7.jpg",
+    "post_id": "BLNn6K-gzE7",
+    "face_csv": 1
+  },
+  {
+    "image": "CY58aafl1hc_10.jpg",
+    "post_id": "CY58aafl1hc",
+    "face_csv": 0
+  },
+  {
+    "image": "COumrpHFBdr_8.jpg",
+    "post_id": "COumrpHFBdr",
+    "face_csv": 0
+  },
+  {
+    "image": "By9PxNyH_Fi.jpg",
+    "post_id": "By9PxNyH_Fi",
+    "face_csv": 1
+  },
+  {
+    "image": "CjFOG1jr6I3_3.jpg",
+    "post_id": "CjFOG1jr6I3",
+    "face_csv": 0
+  },
+  {
+    "image": "CLbTZtfFgx9_4.jpg",
+    "post_id": "CLbTZtfFgx9",
+    "face_csv": 0
+  },
+  {
+    "image": "Blp4gTAF5yG_2.jpg",
+    "post_id": "Blp4gTAF5yG",
+    "face_csv": 1
+  },
+  {
+    "image": "C6v8dVJhoD2_2.jpg",
+    "post_id": "C6v8dVJhoD2",
+    "face_csv": 1
+  },
+  {
+    "image": "CUpRP0UBJKW_7.jpg",
+    "post_id": "CUpRP0UBJKW",
+    "face_csv": 0
+  },
+  {
+    "image": "C1ep5mnLydV_5.jpg",
+    "post_id": "C1ep5mnLydV",
+    "face_csv": 0
+  },
+  {
+    "image": "Cg1YuSHLRCU_2.jpg",
+    "post_id": "Cg1YuSHLRCU",
+    "face_csv": 0
+  },
+  {
+    "image": "Chjsx39rpGq_1.jpg",
+    "post_id": "Chjsx39rpGq",
+    "face_csv": 1
+  },
+  {
+    "image": "BKpw6YzAfd5.jpg",
+    "post_id": "BKpw6YzAfd5",
+    "face_csv": 1
+  },
+  {
+    "image": "CQ08NKYtqwR.jpg",
+    "post_id": "CQ08NKYtqwR",
+    "face_csv": 1
+  },
+  {
+    "image": "DH-9LWQTlqI_4.jpg",
+    "post_id": "DH-9LWQTlqI",
+    "face_csv": 0
+  },
+  {
+    "image": "CkF8ycULmjy_7.jpg",
+    "post_id": "CkF8ycULmjy",
+    "face_csv": 0
+  },
+  {
+    "image": "CRpnky7j9KN_5.jpg",
+    "post_id": "CRpnky7j9KN",
+    "face_csv": 0
+  },
+  {
+    "image": "CIMzxcaFneS_9.jpg",
+    "post_id": "CIMzxcaFneS",
+    "face_csv": 0
+  },
+  {
+    "image": "CbmWJKaL5Vg_5.jpg",
+    "post_id": "CbmWJKaL5Vg",
+    "face_csv": 0
+  },
+  {
+    "image": "DAD1YunzpbY.jpg",
+    "post_id": "DAD1YunzpbY",
+    "face_csv": 1
+  },
+  {
+    "image": "CWF5X72Fq3o_5.jpg",
+    "post_id": "CWF5X72Fq3o",
+    "face_csv": 0
+  },
+  {
+    "image": "CW-s6w6lerB_4.jpg",
+    "post_id": "CW-s6w6lerB",
+    "face_csv": 0
+  },
+  {
+    "image": "DAbFTIoTedJ_7.jpg",
+    "post_id": "DAbFTIoTedJ",
+    "face_csv": 0
+  },
+  {
+    "image": "C-AWV2izcWM_1.jpg",
+    "post_id": "C-AWV2izcWM",
+    "face_csv": 0
+  },
+  {
+    "image": "Cp7eUI6rKnK_7.jpg",
+    "post_id": "Cp7eUI6rKnK",
+    "face_csv": 1
+  },
+  {
+    "image": "Cbzxvjrrz_7_4.jpg",
+    "post_id": "Cbzxvjrrz_7",
+    "face_csv": 0
+  },
+  {
+    "image": "C29zhoUrFyn_10.jpg",
+    "post_id": "C29zhoUrFyn",
+    "face_csv": 0
+  },
+  {
+    "image": "BqmrDmsj46o.jpg",
+    "post_id": "BqmrDmsj46o",
+    "face_csv": 1
+  },
+  {
+    "image": "C1okHgUr-T7_3.jpg",
+    "post_id": "C1okHgUr-T7",
+    "face_csv": 0
+  },
+  {
+    "image": "CGSKsTmFFZm_3.jpg",
+    "post_id": "CGSKsTmFFZm",
+    "face_csv": 1
+  },
+  {
+    "image": "C1gYrFbPyVn_8.jpg",
+    "post_id": "C1gYrFbPyVn",
+    "face_csv": 1
+  },
+  {
+    "image": "Cib-WGlrHgj_2.jpg",
+    "post_id": "Cib-WGlrHgj",
+    "face_csv": 0
+  },
+  {
+    "image": "CPc9iZClTwe_2.jpg",
+    "post_id": "CPc9iZClTwe",
+    "face_csv": 1
+  },
+  {
+    "image": "C8Mn1KbyIsF_4.jpg",
+    "post_id": "C8Mn1KbyIsF",
+    "face_csv": 0
+  },
+  {
+    "image": "C4UlUOurXCY_3.jpg",
+    "post_id": "C4UlUOurXCY",
+    "face_csv": 0
+  },
+  {
+    "image": "Bysb6Y0FzlB_1.jpg",
+    "post_id": "Bysb6Y0FzlB",
+    "face_csv": 1
+  },
+  {
+    "image": "C50bvvlSzD5_8.jpg",
+    "post_id": "C50bvvlSzD5",
+    "face_csv": 0
+  },
+  {
+    "image": "CXJT_beFgeX_4.jpg",
+    "post_id": "CXJT_beFgeX",
+    "face_csv": 0
+  },
+  {
+    "image": "DMBY7hpzFCV.jpg",
+    "post_id": "DMBY7hpzFCV",
+    "face_csv": 1
+  },
+  {
+    "image": "CFLtdYDlpTJ_4.jpg",
+    "post_id": "CFLtdYDlpTJ",
+    "face_csv": 0
+  },
+  {
+    "image": "Cvw1E_HpFP1.jpg",
+    "post_id": "Cvw1E_HpFP1",
+    "face_csv": 1
+  },
+  {
+    "image": "CP0RLwNDSIL_3.jpg",
+    "post_id": "CP0RLwNDSIL",
+    "face_csv": 1
+  },
+  {
+    "image": "CYd4kRBlk5D_5.jpg",
+    "post_id": "CYd4kRBlk5D",
+    "face_csv": 1
+  },
+  {
+    "image": "Cw7eFfIp0fl_2.jpg",
+    "post_id": "Cw7eFfIp0fl",
+    "face_csv": 0
+  },
+  {
+    "image": "B7x2ilClH4W_4.jpg",
+    "post_id": "B7x2ilClH4W",
+    "face_csv": 0
+  },
+  {
+    "image": "CdImUpqlVDk_7.jpg",
+    "post_id": "CdImUpqlVDk",
+    "face_csv": 1
+  },
+  {
+    "image": "Cgj4riJPsgh.jpg",
+    "post_id": "Cgj4riJPsgh",
+    "face_csv": 0
+  },
+  {
+    "image": "CCsfAVLld0w_1.jpg",
+    "post_id": "CCsfAVLld0w",
+    "face_csv": 1
+  },
+  {
+    "image": "CJvu4U0l_c0_7.jpg",
+    "post_id": "CJvu4U0l_c0",
+    "face_csv": 1
+  },
+  {
+    "image": "C0gaDg9LakO_2.jpg",
+    "post_id": "C0gaDg9LakO",
+    "face_csv": 0
+  },
+  {
+    "image": "CftJl-Gr0CH_1.jpg",
+    "post_id": "CftJl-Gr0CH",
+    "face_csv": 1
+  },
+  {
+    "image": "CHIaVNWloLf_3.jpg",
+    "post_id": "CHIaVNWloLf",
+    "face_csv": 1
+  },
+  {
+    "image": "DCWYB1_znQ0_9.jpg",
+    "post_id": "DCWYB1_znQ0",
+    "face_csv": 0
+  },
+  {
+    "image": "CYQLQ0zlOf3.jpg",
+    "post_id": "CYQLQ0zlOf3",
+    "face_csv": 1
+  },
+  {
+    "image": "Cd0fqfvldXT_3.jpg",
+    "post_id": "Cd0fqfvldXT",
+    "face_csv": 1
+  },
+  {
+    "image": "Bm0V3qOBK1l_2.jpg",
+    "post_id": "Bm0V3qOBK1l",
+    "face_csv": 1
+  },
+  {
+    "image": "CyqNeE8hKHO_3.jpg",
+    "post_id": "CyqNeE8hKHO",
+    "face_csv": 0
+  },
+  {
+    "image": "BzK0SYUlwK3_1.jpg",
+    "post_id": "BzK0SYUlwK3",
+    "face_csv": 0
+  },
+  {
+    "image": "B1bF0Q0lPmW_1.jpg",
+    "post_id": "B1bF0Q0lPmW",
+    "face_csv": 1
+  },
+  {
+    "image": "CR2yja3stmQ.jpg",
+    "post_id": "CR2yja3stmQ",
+    "face_csv": 1
+  },
+  {
+    "image": "Bc2bo8dhycj_2.jpg",
+    "post_id": "Bc2bo8dhycj",
+    "face_csv": 1
+  },
+  {
+    "image": "CjIZlsxLWBb_2.jpg",
+    "post_id": "CjIZlsxLWBb",
+    "face_csv": 0
+  },
+  {
+    "image": "CFyVRsnlCet_1.jpg",
+    "post_id": "CFyVRsnlCet",
+    "face_csv": 0
+  },
+  {
+    "image": "Cc7yAVtlSbj_6.jpg",
+    "post_id": "Cc7yAVtlSbj",
+    "face_csv": 1
+  },
+  {
+    "image": "CSI-Ewglmqy_2.jpg",
+    "post_id": "CSI-Ewglmqy",
+    "face_csv": 0
+  },
+  {
+    "image": "CdqGbqyrXnR_6.jpg",
+    "post_id": "CdqGbqyrXnR",
+    "face_csv": 0
+  },
+  {
+    "image": "DOf47CNkmEM_6.jpg",
+    "post_id": "DOf47CNkmEM",
+    "face_csv": 0
+  },
+  {
+    "image": "Bfen5xOhUBN_4.jpg",
+    "post_id": "Bfen5xOhUBN",
+    "face_csv": 1
+  },
+  {
+    "image": "CK_Z_TPFczI_4.jpg",
+    "post_id": "CK_Z_TPFczI",
+    "face_csv": 0
+  },
+  {
+    "image": "Cl09kwpLp_I_2.jpg",
+    "post_id": "Cl09kwpLp_I",
+    "face_csv": 1
+  },
+  {
+    "image": "BhPLf5qABVS_2.jpg",
+    "post_id": "BhPLf5qABVS",
+    "face_csv": 0
+  },
+  {
+    "image": "Cu1EgbCL8TH_1.jpg",
+    "post_id": "Cu1EgbCL8TH",
+    "face_csv": 0
+  },
+  {
+    "image": "B0zrTr6F2Aw.jpg",
+    "post_id": "B0zrTr6F2Aw",
+    "face_csv": 1
+  },
+  {
+    "image": "B4mUZPOlHJ7_2.jpg",
+    "post_id": "B4mUZPOlHJ7",
+    "face_csv": 0
+  },
+  {
+    "image": "Cve4_fly62g_7.jpg",
+    "post_id": "Cve4_fly62g",
+    "face_csv": 0
+  },
+  {
+    "image": "C1g_i4drF6k_2.jpg",
+    "post_id": "C1g_i4drF6k",
+    "face_csv": 1
+  },
+  {
+    "image": "CC3POibFSGh_3.jpg",
+    "post_id": "CC3POibFSGh",
+    "face_csv": 0
+  },
+  {
+    "image": "CwuVYYULRNs_1.jpg",
+    "post_id": "CwuVYYULRNs",
+    "face_csv": 0
+  },
+  {
+    "image": "CYi3c6qr5vj_1.jpg",
+    "post_id": "CYi3c6qr5vj",
+    "face_csv": 1
+  },
+  {
+    "image": "CeWEorbFKzQ_2.jpg",
+    "post_id": "CeWEorbFKzQ",
+    "face_csv": 1
+  },
+  {
+    "image": "CLebUm2FepV_2.jpg",
+    "post_id": "CLebUm2FepV",
+    "face_csv": 0
+  },
+  {
+    "image": "B-9jUuXF06c_3.jpg",
+    "post_id": "B-9jUuXF06c",
+    "face_csv": 0
+  },
+  {
+    "image": "C1I24Wbyu2B_1.jpg",
+    "post_id": "C1I24Wbyu2B",
+    "face_csv": 0
+  },
+  {
+    "image": "BLrSENLArYK.jpg",
+    "post_id": "BLrSENLArYK",
+    "face_csv": 0
+  },
+  {
+    "image": "CRlzH83LLoE_3.jpg",
+    "post_id": "CRlzH83LLoE",
+    "face_csv": 0
+  },
+  {
+    "image": "B9azGwtDwID.jpg",
+    "post_id": "B9azGwtDwID",
+    "face_csv": 1
+  },
+  {
+    "image": "Caj91AHPgVF_4.jpg",
+    "post_id": "Caj91AHPgVF",
+    "face_csv": 0
+  },
+  {
+    "image": "Cm1TLF0LaJz_1.jpg",
+    "post_id": "Cm1TLF0LaJz",
+    "face_csv": 0
+  },
+  {
+    "image": "DNkmuuzpIVu_1.jpg",
+    "post_id": "DNkmuuzpIVu",
+    "face_csv": 1
+  },
+  {
+    "image": "CCfm_oylFBV_4.jpg",
+    "post_id": "CCfm_oylFBV",
+    "face_csv": 0
+  },
+  {
+    "image": "BHW73Y_g4dj.jpg",
+    "post_id": "BHW73Y_g4dj",
+    "face_csv": 1
+  },
+  {
+    "image": "CqSoa6uLpBR_2.jpg",
+    "post_id": "CqSoa6uLpBR",
+    "face_csv": 0
+  },
+  {
+    "image": "DDW8kvKzonM_3.jpg",
+    "post_id": "DDW8kvKzonM",
+    "face_csv": 0
+  },
+  {
+    "image": "CR_ZTbFH9mq_7.jpg",
+    "post_id": "CR_ZTbFH9mq",
+    "face_csv": 1
+  },
+  {
+    "image": "CVjmrmyPOP6_2.jpg",
+    "post_id": "CVjmrmyPOP6",
+    "face_csv": 0
+  },
+  {
+    "image": "BtRAkjVDqjl_1.jpg",
+    "post_id": "BtRAkjVDqjl",
+    "face_csv": 1
+  },
+  {
+    "image": "CQlBnT9FKWd_1.jpg",
+    "post_id": "CQlBnT9FKWd",
+    "face_csv": 0
+  },
+  {
+    "image": "CZ6mLjoFLmN_3.jpg",
+    "post_id": "CZ6mLjoFLmN",
+    "face_csv": 0
+  },
+  {
+    "image": "C2vrGUbSXXI_6.jpg",
+    "post_id": "C2vrGUbSXXI",
+    "face_csv": 1
+  },
+  {
+    "image": "CUzQ9PCFK66_9.jpg",
+    "post_id": "CUzQ9PCFK66",
+    "face_csv": 0
+  },
+  {
+    "image": "DBJN2GLzBFu_1.jpg",
+    "post_id": "DBJN2GLzBFu",
+    "face_csv": 1
+  },
+  {
+    "image": "ClK1uP6rl3y_1.jpg",
+    "post_id": "ClK1uP6rl3y",
+    "face_csv": 1
+  },
+  {
+    "image": "CKd1GqVDZ1P_6.jpg",
+    "post_id": "CKd1GqVDZ1P",
+    "face_csv": 1
+  },
+  {
+    "image": "CLHR0s4FEnI_9.jpg",
+    "post_id": "CLHR0s4FEnI",
+    "face_csv": 1
+  },
+  {
+    "image": "CbciGnJhmRm_5.jpg",
+    "post_id": "CbciGnJhmRm",
+    "face_csv": 0
+  },
+  {
+    "image": "DI209s3B0H6_5.jpg",
+    "post_id": "DI209s3B0H6",
+    "face_csv": 1
+  },
+  {
+    "image": "C1whDF1rDBT_6.jpg",
+    "post_id": "C1whDF1rDBT",
+    "face_csv": 0
+  },
+  {
+    "image": "B7xxhoNFcOZ_2.jpg",
+    "post_id": "B7xxhoNFcOZ",
+    "face_csv": 1
+  },
+  {
+    "image": "CTrpbdAlMy5_6.jpg",
+    "post_id": "CTrpbdAlMy5",
+    "face_csv": 0
+  },
+  {
+    "image": "C_LK1E7vv3r.jpg",
+    "post_id": "C_LK1E7vv3r",
+    "face_csv": 0
+  },
+  {
+    "image": "C4sfDY9hmsz_3.jpg",
+    "post_id": "C4sfDY9hmsz",
+    "face_csv": 0
+  },
+  {
+    "image": "CIa8kiQDSBw_5.jpg",
+    "post_id": "CIa8kiQDSBw",
+    "face_csv": 0
+  },
+  {
+    "image": "Cr-pZ1vrA5__3.jpg",
+    "post_id": "Cr-pZ1vrA5_",
+    "face_csv": 0
+  },
+  {
+    "image": "CWqMOIRP2jB_5.jpg",
+    "post_id": "CWqMOIRP2jB",
+    "face_csv": 0
+  },
+  {
+    "image": "BzY3UTanro-_3.jpg",
+    "post_id": "BzY3UTanro-",
+    "face_csv": 1
+  },
+  {
+    "image": "CPCxNfKlKWJ_7.jpg",
+    "post_id": "CPCxNfKlKWJ",
+    "face_csv": 0
+  },
+  {
+    "image": "Coel59lL4Q6_1.jpg",
+    "post_id": "Coel59lL4Q6",
+    "face_csv": 0
+  },
+  {
+    "image": "C2RzfeEveHJ_7.jpg",
+    "post_id": "C2RzfeEveHJ",
+    "face_csv": 0
+  },
+  {
+    "image": "CTLtXiwnFsv.jpg",
+    "post_id": "CTLtXiwnFsv",
+    "face_csv": 1
+  },
+  {
+    "image": "B7LlD4MFTpc_4.jpg",
+    "post_id": "B7LlD4MFTpc",
+    "face_csv": 0
+  },
+  {
+    "image": "B_m3EwBFfMw.jpg",
+    "post_id": "B_m3EwBFfMw",
+    "face_csv": 0
+  },
+  {
+    "image": "CAoggLCnSNY.jpg",
+    "post_id": "CAoggLCnSNY",
+    "face_csv": 1
+  },
+  {
+    "image": "CLjb6TOlAyE_2.jpg",
+    "post_id": "CLjb6TOlAyE",
+    "face_csv": 1
+  },
+  {
+    "image": "Ch4TOw8rXv5_7.jpg",
+    "post_id": "Ch4TOw8rXv5",
+    "face_csv": 0
+  },
+  {
+    "image": "C4-wgsVS2Zt_8.jpg",
+    "post_id": "C4-wgsVS2Zt",
+    "face_csv": 1
+  },
+  {
+    "image": "Ce0-rFXlCcW_2.jpg",
+    "post_id": "Ce0-rFXlCcW",
+    "face_csv": 0
+  },
+  {
+    "image": "BPztPwxA21P.jpg",
+    "post_id": "BPztPwxA21P",
+    "face_csv": 0
+  },
+  {
+    "image": "BeXtFuoBvpJ_2.jpg",
+    "post_id": "BeXtFuoBvpJ",
+    "face_csv": 1
+  },
+  {
+    "image": "B8PdQ_BFwbO_2.jpg",
+    "post_id": "B8PdQ_BFwbO",
+    "face_csv": 1
+  },
+  {
+    "image": "CvuHUTRyxMl_2.jpg",
+    "post_id": "CvuHUTRyxMl",
+    "face_csv": 0
+  },
+  {
+    "image": "C2MvofiP-b9.jpg",
+    "post_id": "C2MvofiP-b9",
+    "face_csv": 1
+  },
+  {
+    "image": "CvHsOTVS9eX_7.jpg",
+    "post_id": "CvHsOTVS9eX",
+    "face_csv": 0
+  },
+  {
+    "image": "DLjAiFHBDbu_3.jpg",
+    "post_id": "DLjAiFHBDbu",
+    "face_csv": 1
+  },
+  {
+    "image": "DIlkTgdBw3c_3.jpg",
+    "post_id": "DIlkTgdBw3c",
+    "face_csv": 0
+  },
+  {
+    "image": "COIHI5ilt9l_8.jpg",
+    "post_id": "COIHI5ilt9l",
+    "face_csv": 0
+  },
+  {
+    "image": "CgG3asgOsli_6.jpg",
+    "post_id": "CgG3asgOsli",
+    "face_csv": 0
+  },
+  {
+    "image": "CSiPnb_lxXJ_7.jpg",
+    "post_id": "CSiPnb_lxXJ",
+    "face_csv": 1
+  },
+  {
+    "image": "C_IJgaXyITp_1.jpg",
+    "post_id": "C_IJgaXyITp",
+    "face_csv": 1
+  },
+  {
+    "image": "BQHx2Y9gzEE.jpg",
+    "post_id": "BQHx2Y9gzEE",
+    "face_csv": 1
+  },
+  {
+    "image": "Cf3hsSBLWjI_3.jpg",
+    "post_id": "Cf3hsSBLWjI",
+    "face_csv": 1
+  },
+  {
+    "image": "C5OFZa9vXal_2.jpg",
+    "post_id": "C5OFZa9vXal",
+    "face_csv": 1
+  },
+  {
+    "image": "Cgg83YPJ-fS.jpg",
+    "post_id": "Cgg83YPJ-fS",
+    "face_csv": 1
+  },
+  {
+    "image": "C_AjIulywtM_1.jpg",
+    "post_id": "C_AjIulywtM",
+    "face_csv": 0
+  },
+  {
+    "image": "CQTcKrQF9Af_1.jpg",
+    "post_id": "CQTcKrQF9Af",
+    "face_csv": 1
+  },
+  {
+    "image": "Bwa1YRfncO7_2.jpg",
+    "post_id": "Bwa1YRfncO7",
+    "face_csv": 0
+  },
+  {
+    "image": "C0ThHMIv7ZB_6.jpg",
+    "post_id": "C0ThHMIv7ZB",
+    "face_csv": 1
+  },
+  {
+    "image": "ChtfN3Lrfmi_7.jpg",
+    "post_id": "ChtfN3Lrfmi",
+    "face_csv": 0
+  },
+  {
+    "image": "C0PQfnTSBV5_5.jpg",
+    "post_id": "C0PQfnTSBV5",
+    "face_csv": 0
+  },
+  {
+    "image": "Cob1oFHJYP8_2.jpg",
+    "post_id": "Cob1oFHJYP8",
+    "face_csv": 1
+  },
+  {
+    "image": "CydIyPOrN3w_1.jpg",
+    "post_id": "CydIyPOrN3w",
+    "face_csv": 1
+  },
+  {
+    "image": "C5p6w5QLRtL_2.jpg",
+    "post_id": "C5p6w5QLRtL",
+    "face_csv": 1
+  },
+  {
+    "image": "CVNP6dcFIIv_2.jpg",
+    "post_id": "CVNP6dcFIIv",
+    "face_csv": 1
+  },
+  {
+    "image": "B0VtGeFFlmm_4.jpg",
+    "post_id": "B0VtGeFFlmm",
+    "face_csv": 1
+  },
+  {
+    "image": "Csa5u6uSaZ2_5.jpg",
+    "post_id": "Csa5u6uSaZ2",
+    "face_csv": 1
+  },
+  {
+    "image": "B8yfHxLloqD_6.jpg",
+    "post_id": "B8yfHxLloqD",
+    "face_csv": 1
+  },
+  {
+    "image": "BpZcOTnhweF_4.jpg",
+    "post_id": "BpZcOTnhweF",
+    "face_csv": 1
+  },
+  {
+    "image": "DEMpArZzGrg_7.jpg",
+    "post_id": "DEMpArZzGrg",
+    "face_csv": 0
+  },
+  {
+    "image": "Cj2ruSYLgA7_1.jpg",
+    "post_id": "Cj2ruSYLgA7",
+    "face_csv": 1
+  },
+  {
+    "image": "B8Y2nn9Ffnv.jpg",
+    "post_id": "B8Y2nn9Ffnv",
+    "face_csv": 1
+  },
+  {
+    "image": "C7S43PcyxXf_8.jpg",
+    "post_id": "C7S43PcyxXf",
+    "face_csv": 0
+  },
+  {
+    "image": "DNFQjrWTYdH_1.jpg",
+    "post_id": "DNFQjrWTYdH",
+    "face_csv": 0
+  },
+  {
+    "image": "B17xrRuFjC9_1.jpg",
+    "post_id": "B17xrRuFjC9",
+    "face_csv": 1
+  },
+  {
+    "image": "CzgNxszLyLb_3.jpg",
+    "post_id": "CzgNxszLyLb",
+    "face_csv": 0
+  },
+  {
+    "image": "Cdf8rOapid7_4.jpg",
+    "post_id": "Cdf8rOapid7",
+    "face_csv": 0
+  },
+  {
+    "image": "CRGvAACFnZc_3.jpg",
+    "post_id": "CRGvAACFnZc",
+    "face_csv": 1
+  },
+  {
+    "image": "CdpOtBtL-Le_9.jpg",
+    "post_id": "CdpOtBtL-Le",
+    "face_csv": 0
+  },
+  {
+    "image": "Cqm8KxurO68_5.jpg",
+    "post_id": "Cqm8KxurO68",
+    "face_csv": 0
+  },
+  {
+    "image": "B7CwLq0nMXu.jpg",
+    "post_id": "B7CwLq0nMXu",
+    "face_csv": 1
+  },
+  {
+    "image": "CD6NMbwFWX4_1.jpg",
+    "post_id": "CD6NMbwFWX4",
+    "face_csv": 0
+  },
+  {
+    "image": "CztAOdyJypg_6.jpg",
+    "post_id": "CztAOdyJypg",
+    "face_csv": 0
+  },
+  {
+    "image": "CUZ-AIIlOCk_6.jpg",
+    "post_id": "CUZ-AIIlOCk",
+    "face_csv": 0
+  },
+  {
+    "image": "CJgKlQ3Frk-_2.jpg",
+    "post_id": "CJgKlQ3Frk-",
+    "face_csv": 1
+  },
+  {
+    "image": "CwAfbRbJ4pg_2.jpg",
+    "post_id": "CwAfbRbJ4pg",
+    "face_csv": 0
+  },
+  {
+    "image": "CFPPRN-l-3d_4.jpg",
+    "post_id": "CFPPRN-l-3d",
+    "face_csv": 0
+  },
+  {
+    "image": "CkK8T9-L5FH_9.jpg",
+    "post_id": "CkK8T9-L5FH",
+    "face_csv": 0
+  },
+  {
+    "image": "CSS1DYfp5T3_1.jpg",
+    "post_id": "CSS1DYfp5T3",
+    "face_csv": 0
+  },
+  {
+    "image": "CTrh7vcFsrF_1.jpg",
+    "post_id": "CTrh7vcFsrF",
+    "face_csv": 1
+  },
+  {
+    "image": "CRIivyDg41S_8.jpg",
+    "post_id": "CRIivyDg41S",
+    "face_csv": 0
+  },
+  {
+    "image": "B8n2B_glqni_2.jpg",
+    "post_id": "B8n2B_glqni",
+    "face_csv": 1
+  },
+  {
+    "image": "CegN15nFSJ2_3.jpg",
+    "post_id": "CegN15nFSJ2",
+    "face_csv": 1
+  },
+  {
+    "image": "C2Ck59tLR-I_5.jpg",
+    "post_id": "C2Ck59tLR-I",
+    "face_csv": 0
+  },
+  {
+    "image": "CNPtj12j-Br_5.jpg",
+    "post_id": "CNPtj12j-Br",
+    "face_csv": 0
+  },
+  {
+    "image": "CZmDHlwFLfO_2.jpg",
+    "post_id": "CZmDHlwFLfO",
+    "face_csv": 1
+  },
+  {
+    "image": "CY3foC4lJzL_5.jpg",
+    "post_id": "CY3foC4lJzL",
+    "face_csv": 1
+  },
+  {
+    "image": "CbIGT4KL2tS_3.jpg",
+    "post_id": "CbIGT4KL2tS",
+    "face_csv": 1
+  },
+  {
+    "image": "B4fUBOglDFu_2.jpg",
+    "post_id": "B4fUBOglDFu",
+    "face_csv": 0
+  },
+  {
+    "image": "Ca4gF3GlFrN_4.jpg",
+    "post_id": "Ca4gF3GlFrN",
+    "face_csv": 0
+  },
+  {
+    "image": "C2e3wjtyfzW_3.jpg",
+    "post_id": "C2e3wjtyfzW",
+    "face_csv": 0
+  },
+  {
+    "image": "CLRYyN-s2Wy.jpg",
+    "post_id": "CLRYyN-s2Wy",
+    "face_csv": 0
+  },
+  {
+    "image": "CNpYUZwlhnD_3.jpg",
+    "post_id": "CNpYUZwlhnD",
+    "face_csv": 1
+  },
+  {
+    "image": "Bdm8Rxela9w_1.jpg",
+    "post_id": "Bdm8Rxela9w",
+    "face_csv": 1
+  },
+  {
+    "image": "DGskKlOyxOC_1.jpg",
+    "post_id": "DGskKlOyxOC",
+    "face_csv": 0
+  },
+  {
+    "image": "Cd78fLXL4oE_3.jpg",
+    "post_id": "Cd78fLXL4oE",
+    "face_csv": 1
+  },
+  {
+    "image": "CpxYKOPLxhm_3.jpg",
+    "post_id": "CpxYKOPLxhm",
+    "face_csv": 0
+  },
+  {
+    "image": "CGxCbe7D613_1.jpg",
+    "post_id": "CGxCbe7D613",
+    "face_csv": 0
+  },
+  {
+    "image": "CUH7f3bFc7A_1.jpg",
+    "post_id": "CUH7f3bFc7A",
+    "face_csv": 0
+  },
+  {
+    "image": "CNznTaDlQRm_4.jpg",
+    "post_id": "CNznTaDlQRm",
+    "face_csv": 0
+  },
+  {
+    "image": "CtrF9pfBnkN_6.jpg",
+    "post_id": "CtrF9pfBnkN",
+    "face_csv": 0
+  },
+  {
+    "image": "C5LNxbZrz7o_3.jpg",
+    "post_id": "C5LNxbZrz7o",
+    "face_csv": 0
+  },
+  {
+    "image": "CauBkPdv7pX_6.jpg",
+    "post_id": "CauBkPdv7pX",
+    "face_csv": 0
+  },
+  {
+    "image": "CJ-F121nRE1_2.jpg",
+    "post_id": "CJ-F121nRE1",
+    "face_csv": 1
+  },
+  {
+    "image": "CPdCyx5FXyu_7.jpg",
+    "post_id": "CPdCyx5FXyu",
+    "face_csv": 1
+  },
+  {
+    "image": "CPFdEWzlIvu_6.jpg",
+    "post_id": "CPFdEWzlIvu",
+    "face_csv": 0
+  },
+  {
+    "image": "CYEMs7AFyVc_1.jpg",
+    "post_id": "CYEMs7AFyVc",
+    "face_csv": 1
+  },
+  {
+    "image": "DDsq5IPzBM1_5.jpg",
+    "post_id": "DDsq5IPzBM1",
+    "face_csv": 1
+  },
+  {
+    "image": "COkttKUFVEn_9.jpg",
+    "post_id": "COkttKUFVEn",
+    "face_csv": 0
+  },
+  {
+    "image": "B3zKZa2lDqD_2.jpg",
+    "post_id": "B3zKZa2lDqD",
+    "face_csv": 1
+  },
+  {
+    "image": "CVc0ziol5cu_1.jpg",
+    "post_id": "CVc0ziol5cu",
+    "face_csv": 1
+  },
+  {
+    "image": "CCqLOGrF9QO_2.jpg",
+    "post_id": "CCqLOGrF9QO",
+    "face_csv": 1
+  },
+  {
+    "image": "DHnnScaPxo-_2.jpg",
+    "post_id": "DHnnScaPxo-",
+    "face_csv": 1
+  },
+  {
+    "image": "DMSUW8KzMYx_7.jpg",
+    "post_id": "DMSUW8KzMYx",
+    "face_csv": 0
+  },
+  {
+    "image": "COHcU1SlmOi_2.jpg",
+    "post_id": "COHcU1SlmOi",
+    "face_csv": 0
+  },
+  {
+    "image": "BFBCM25KUWL.jpg",
+    "post_id": "BFBCM25KUWL",
+    "face_csv": 1
+  },
+  {
+    "image": "CXbCE6fFPfb_5.jpg",
+    "post_id": "CXbCE6fFPfb",
+    "face_csv": 0
+  },
+  {
+    "image": "COegVqVlxU9_4.jpg",
+    "post_id": "COegVqVlxU9",
+    "face_csv": 0
+  },
+  {
+    "image": "CYD4ra8FlMx_1.jpg",
+    "post_id": "CYD4ra8FlMx",
+    "face_csv": 0
+  },
+  {
+    "image": "BxjVXfTjqPM.jpg",
+    "post_id": "BxjVXfTjqPM",
+    "face_csv": 1
+  },
+  {
+    "image": "C5ihbW-PS9h_3.jpg",
+    "post_id": "C5ihbW-PS9h",
+    "face_csv": 1
+  },
+  {
+    "image": "CBNajYblFXF_1.jpg",
+    "post_id": "CBNajYblFXF",
+    "face_csv": 0
+  },
+  {
+    "image": "C37PRCUyqx4_5.jpg",
+    "post_id": "C37PRCUyqx4",
+    "face_csv": 0
+  },
+  {
+    "image": "B2RW7b-FXir_1.jpg",
+    "post_id": "B2RW7b-FXir",
+    "face_csv": 0
+  },
+  {
+    "image": "BdsZdmGB6F5.jpg",
+    "post_id": "BdsZdmGB6F5",
+    "face_csv": 1
+  },
+  {
+    "image": "CRBS6aRtsTJ.jpg",
+    "post_id": "CRBS6aRtsTJ",
+    "face_csv": 1
+  },
+  {
+    "image": "CLtx9jHFiR5_3.jpg",
+    "post_id": "CLtx9jHFiR5",
+    "face_csv": 0
+  },
+  {
+    "image": "CLhT-Edjr2-_5.jpg",
+    "post_id": "CLhT-Edjr2-",
+    "face_csv": 0
+  },
+  {
+    "image": "BkKO831BzpH.jpg",
+    "post_id": "BkKO831BzpH",
+    "face_csv": 1
+  },
+  {
+    "image": "C2AGP3eLzXG_2.jpg",
+    "post_id": "C2AGP3eLzXG",
+    "face_csv": 0
+  },
+  {
+    "image": "DCUEXm2T7ON_6.jpg",
+    "post_id": "DCUEXm2T7ON",
+    "face_csv": 0
+  },
+  {
+    "image": "BgXXqgClPHY.jpg",
+    "post_id": "BgXXqgClPHY",
+    "face_csv": 1
+  },
+  {
+    "image": "BQFJlrxgu8H.jpg",
+    "post_id": "BQFJlrxgu8H",
+    "face_csv": 1
+  },
+  {
+    "image": "C_aR64TTls1_5.jpg",
+    "post_id": "C_aR64TTls1",
+    "face_csv": 0
+  },
+  {
+    "image": "B6PVdl4DuBI.jpg",
+    "post_id": "B6PVdl4DuBI",
+    "face_csv": 0
+  },
+  {
+    "image": "DDJ4GCSTQ11_6.jpg",
+    "post_id": "DDJ4GCSTQ11",
+    "face_csv": 0
+  },
+  {
+    "image": "C53KBvSytrh_7.jpg",
+    "post_id": "C53KBvSytrh",
+    "face_csv": 0
+  },
+  {
+    "image": "CjX8MCFrDoo_6.jpg",
+    "post_id": "CjX8MCFrDoo",
+    "face_csv": 1
+  },
+  {
+    "image": "CT5j5ehh8M6_3.jpg",
+    "post_id": "CT5j5ehh8M6",
+    "face_csv": 1
+  },
+  {
+    "image": "B8_X7VPDU04_2.jpg",
+    "post_id": "B8_X7VPDU04",
+    "face_csv": 0
+  },
+  {
+    "image": "DHztptvvvsj_3.jpg",
+    "post_id": "DHztptvvvsj",
+    "face_csv": 1
+  },
+  {
+    "image": "CZDhIwQPyzH_3.jpg",
+    "post_id": "CZDhIwQPyzH",
+    "face_csv": 1
+  },
+  {
+    "image": "CGzgvjUl0W__3.jpg",
+    "post_id": "CGzgvjUl0W_",
+    "face_csv": 0
+  },
+  {
+    "image": "BMrDAzAAyH-.jpg",
+    "post_id": "BMrDAzAAyH-",
+    "face_csv": 1
+  },
+  {
+    "image": "CrTHr64Pcle_4.jpg",
+    "post_id": "CrTHr64Pcle",
+    "face_csv": 1
+  },
+  {
+    "image": "CLG1VC3lHAc_3.jpg",
+    "post_id": "CLG1VC3lHAc",
+    "face_csv": 0
+  },
+  {
+    "image": "ChpAir9Lzb8_5.jpg",
+    "post_id": "ChpAir9Lzb8",
+    "face_csv": 0
+  },
+  {
+    "image": "C5uAL1vSy1G_9.jpg",
+    "post_id": "C5uAL1vSy1G",
+    "face_csv": 1
+  },
+  {
+    "image": "C8trQzShFeU_6.jpg",
+    "post_id": "C8trQzShFeU",
+    "face_csv": 0
+  },
+  {
+    "image": "COIOE2ul91p_5.jpg",
+    "post_id": "COIOE2ul91p",
+    "face_csv": 1
+  },
+  {
+    "image": "C50gtaqP-3x_1.jpg",
+    "post_id": "C50gtaqP-3x",
+    "face_csv": 1
+  },
+  {
+    "image": "CR06RRdFh5z_3.jpg",
+    "post_id": "CR06RRdFh5z",
+    "face_csv": 0
+  },
+  {
+    "image": "C63Hj_prRWn_4.jpg",
+    "post_id": "C63Hj_prRWn",
+    "face_csv": 1
+  },
+  {
+    "image": "BhBp9n6gvbQ.jpg",
+    "post_id": "BhBp9n6gvbQ",
+    "face_csv": 1
+  },
+  {
+    "image": "B_mk-cSFnad_2.jpg",
+    "post_id": "B_mk-cSFnad",
+    "face_csv": 1
+  },
+  {
+    "image": "CUZ2zQrlbJo_2.jpg",
+    "post_id": "CUZ2zQrlbJo",
+    "face_csv": 0
+  },
+  {
+    "image": "C0BpIjELKnc_2.jpg",
+    "post_id": "C0BpIjELKnc",
+    "face_csv": 0
+  },
+  {
+    "image": "DMz9hpBSnHY_2.jpg",
+    "post_id": "DMz9hpBSnHY",
+    "face_csv": 0
+  },
+  {
+    "image": "CHISfYVjtBI_2.jpg",
+    "post_id": "CHISfYVjtBI",
+    "face_csv": 0
+  },
+  {
+    "image": "BymTS7LFeuH_2.jpg",
+    "post_id": "BymTS7LFeuH",
+    "face_csv": 1
+  },
+  {
+    "image": "CwfLl_3y1n8_1.jpg",
+    "post_id": "CwfLl_3y1n8",
+    "face_csv": 0
+  },
+  {
+    "image": "CTjiphLltK4_4.jpg",
+    "post_id": "CTjiphLltK4",
+    "face_csv": 0
+  },
+  {
+    "image": "CQdu5LvFBHo_1.jpg",
+    "post_id": "CQdu5LvFBHo",
+    "face_csv": 0
+  },
+  {
+    "image": "CgoyqW_rfty_2.jpg",
+    "post_id": "CgoyqW_rfty",
+    "face_csv": 1
+  },
+  {
+    "image": "Cex_VNyFe2E_2.jpg",
+    "post_id": "Cex_VNyFe2E",
+    "face_csv": 1
+  },
+  {
+    "image": "CD_rSP-nDUc_1.jpg",
+    "post_id": "CD_rSP-nDUc",
+    "face_csv": 1
+  },
+  {
+    "image": "CYgDvkuFEG8_2.jpg",
+    "post_id": "CYgDvkuFEG8",
+    "face_csv": 0
+  },
+  {
+    "image": "DH-pBd8zRCJ_8.jpg",
+    "post_id": "DH-pBd8zRCJ",
+    "face_csv": 1
+  },
+  {
+    "image": "CehkQ6SPQ80_5.jpg",
+    "post_id": "CehkQ6SPQ80",
+    "face_csv": 0
+  },
+  {
+    "image": "CHKfBDejLI9_3.jpg",
+    "post_id": "CHKfBDejLI9",
+    "face_csv": 0
+  },
+  {
+    "image": "C0bmL3XLmWD_7.jpg",
+    "post_id": "C0bmL3XLmWD",
+    "face_csv": 0
+  },
+  {
+    "image": "BbMXa1FhX2d_2.jpg",
+    "post_id": "BbMXa1FhX2d",
+    "face_csv": 1
+  },
+  {
+    "image": "CZ9L7iblfYE_2.jpg",
+    "post_id": "CZ9L7iblfYE",
+    "face_csv": 0
+  },
+  {
+    "image": "B1ganHjHmhv_2.jpg",
+    "post_id": "B1ganHjHmhv",
+    "face_csv": 1
+  },
+  {
+    "image": "CpIeVxnSmjI_6.jpg",
+    "post_id": "CpIeVxnSmjI",
+    "face_csv": 1
+  },
+  {
+    "image": "C5K-ORyLujU_5.jpg",
+    "post_id": "C5K-ORyLujU",
+    "face_csv": 1
+  },
+  {
+    "image": "B6Xj8Sql3fx_7.jpg",
+    "post_id": "B6Xj8Sql3fx",
+    "face_csv": 0
+  },
+  {
+    "image": "C70SOmMy0J4.jpg",
+    "post_id": "C70SOmMy0J4",
+    "face_csv": 1
+  },
+  {
+    "image": "B7QcMzDFmlH_2.jpg",
+    "post_id": "B7QcMzDFmlH",
+    "face_csv": 0
+  },
+  {
+    "image": "CarjAQnLhI3_4.jpg",
+    "post_id": "CarjAQnLhI3",
+    "face_csv": 1
+  },
+  {
+    "image": "CYmIrt-FobU_4.jpg",
+    "post_id": "CYmIrt-FobU",
+    "face_csv": 0
+  },
+  {
+    "image": "CyibaCBScbu_7.jpg",
+    "post_id": "CyibaCBScbu",
+    "face_csv": 0
+  },
+  {
+    "image": "Cnbutv9B-iA_5.jpg",
+    "post_id": "Cnbutv9B-iA",
+    "face_csv": 0
+  },
+  {
+    "image": "DFNGH-cyRbS_1.jpg",
+    "post_id": "DFNGH-cyRbS",
+    "face_csv": 0
+  },
+  {
+    "image": "BdCkZP1gud2.jpg",
+    "post_id": "BdCkZP1gud2",
+    "face_csv": 1
+  },
+  {
+    "image": "DBioaOTzI7V_1.jpg",
+    "post_id": "DBioaOTzI7V",
+    "face_csv": 1
+  },
+  {
+    "image": "B9eNcrDlpPv_2.jpg",
+    "post_id": "B9eNcrDlpPv",
+    "face_csv": 0
+  },
+  {
+    "image": "DEw5wvyzu9A_4.jpg",
+    "post_id": "DEw5wvyzu9A",
+    "face_csv": 0
+  },
+  {
+    "image": "BXfqTUDAwPi.jpg",
+    "post_id": "BXfqTUDAwPi",
+    "face_csv": 1
+  },
+  {
+    "image": "DDjZPHJpP8Z_2.jpg",
+    "post_id": "DDjZPHJpP8Z",
+    "face_csv": 1
+  },
+  {
+    "image": "CprFbp4PWvQ.jpg",
+    "post_id": "CprFbp4PWvQ",
+    "face_csv": 1
+  },
+  {
+    "image": "Crp0u8ouA2__4.jpg",
+    "post_id": "Crp0u8ouA2_",
+    "face_csv": 0
+  },
+  {
+    "image": "Bp0M0DJFYl4_3.jpg",
+    "post_id": "Bp0M0DJFYl4",
+    "face_csv": 1
+  },
+  {
+    "image": "CkGNIQ8vu3O_5.jpg",
+    "post_id": "CkGNIQ8vu3O",
+    "face_csv": 1
+  },
+  {
+    "image": "DFc4ykqz12V_8.jpg",
+    "post_id": "DFc4ykqz12V",
+    "face_csv": 1
+  },
+  {
+    "image": "By-PALSFmPU_3.jpg",
+    "post_id": "By-PALSFmPU",
+    "face_csv": 1
+  },
+  {
+    "image": "BZiEPqrH_2S_1.jpg",
+    "post_id": "BZiEPqrH_2S",
+    "face_csv": 1
+  },
+  {
+    "image": "CKAqjACnhWk.jpg",
+    "post_id": "CKAqjACnhWk",
+    "face_csv": 1
+  },
+  {
+    "image": "CxSSMgQr9bX_3.jpg",
+    "post_id": "CxSSMgQr9bX",
+    "face_csv": 0
+  },
+  {
+    "image": "CrYGcFNrqqI_2.jpg",
+    "post_id": "CrYGcFNrqqI",
+    "face_csv": 1
+  },
+  {
+    "image": "C6ELqQjyiha_3.jpg",
+    "post_id": "C6ELqQjyiha",
+    "face_csv": 0
+  },
+  {
+    "image": "CINVHvBlQ9t_4.jpg",
+    "post_id": "CINVHvBlQ9t",
+    "face_csv": 0
+  },
+  {
+    "image": "C6OItrgrf-p_4.jpg",
+    "post_id": "C6OItrgrf-p",
+    "face_csv": 0
+  },
+  {
+    "image": "CP0nsD9l70x_2.jpg",
+    "post_id": "CP0nsD9l70x",
+    "face_csv": 0
+  },
+  {
+    "image": "CSQXIzjl6u4.jpg",
+    "post_id": "CSQXIzjl6u4",
+    "face_csv": 1
+  },
+  {
+    "image": "CaZqizMJ48r.jpg",
+    "post_id": "CaZqizMJ48r",
+    "face_csv": 0
+  },
+  {
+    "image": "Cs50HScLKlg_5.jpg",
+    "post_id": "Cs50HScLKlg",
+    "face_csv": 1
+  },
+  {
+    "image": "C7MDXalypUI_1.jpg",
+    "post_id": "C7MDXalypUI",
+    "face_csv": 1
+  },
+  {
+    "image": "CMCUZAQn1vc_7.jpg",
+    "post_id": "CMCUZAQn1vc",
+    "face_csv": 1
+  },
+  {
+    "image": "Ba6WiGNhNfA_3.jpg",
+    "post_id": "Ba6WiGNhNfA",
+    "face_csv": 1
+  },
+  {
+    "image": "C2jr0RZr9Kc_10.jpg",
+    "post_id": "C2jr0RZr9Kc",
+    "face_csv": 0
+  },
+  {
+    "image": "BcLo5N8DDhU.jpg",
+    "post_id": "BcLo5N8DDhU",
+    "face_csv": 1
+  },
+  {
+    "image": "C81lTnuhq_2_5.jpg",
+    "post_id": "C81lTnuhq_2",
+    "face_csv": 0
+  },
+  {
+    "image": "CzkrrJOvNKa_8.jpg",
+    "post_id": "CzkrrJOvNKa",
+    "face_csv": 1
+  },
+  {
+    "image": "CCDvmBvFgm7_2.jpg",
+    "post_id": "CCDvmBvFgm7",
+    "face_csv": 1
+  },
+  {
+    "image": "CfypzjNlZSM_7.jpg",
+    "post_id": "CfypzjNlZSM",
+    "face_csv": 0
+  },
+  {
+    "image": "COfc52zlqWJ_3.jpg",
+    "post_id": "COfc52zlqWJ",
+    "face_csv": 1
+  },
+  {
+    "image": "CXJJulLFH1i_8.jpg",
+    "post_id": "CXJJulLFH1i",
+    "face_csv": 0
+  },
+  {
+    "image": "CicT6asLCLO_3.jpg",
+    "post_id": "CicT6asLCLO",
+    "face_csv": 0
+  },
+  {
+    "image": "B5bxtkVH7Hr.jpg",
+    "post_id": "B5bxtkVH7Hr",
+    "face_csv": 1
+  },
+  {
+    "image": "CY_Ww-ulzkp_9.jpg",
+    "post_id": "CY_Ww-ulzkp",
+    "face_csv": 1
+  },
+  {
+    "image": "CIVcVRUFopO_3.jpg",
+    "post_id": "CIVcVRUFopO",
+    "face_csv": 1
+  },
+  {
+    "image": "C0WfucJhstU_1.jpg",
+    "post_id": "C0WfucJhstU",
+    "face_csv": 1
+  },
+  {
+    "image": "CHpqK3EFlUQ_3.jpg",
+    "post_id": "CHpqK3EFlUQ",
+    "face_csv": 1
+  },
+  {
+    "image": "CsLWaV7uned_1.jpg",
+    "post_id": "CsLWaV7uned",
+    "face_csv": 0
+  },
+  {
+    "image": "CT_kzMIF40L_3.jpg",
+    "post_id": "CT_kzMIF40L",
+    "face_csv": 0
+  },
+  {
+    "image": "DFP2OSCzDDF_5.jpg",
+    "post_id": "DFP2OSCzDDF",
+    "face_csv": 1
+  },
+  {
+    "image": "DNAYwp-B2lj_1.jpg",
+    "post_id": "DNAYwp-B2lj",
+    "face_csv": 0
+  },
+  {
+    "image": "BOdZo3DAsXd.jpg",
+    "post_id": "BOdZo3DAsXd",
+    "face_csv": 1
+  },
+  {
+    "image": "B4pZ6pcF8q4.jpg",
+    "post_id": "B4pZ6pcF8q4",
+    "face_csv": 0
+  },
+  {
+    "image": "B6xzfWjF2P-_2.jpg",
+    "post_id": "B6xzfWjF2P-",
+    "face_csv": 0
+  },
+  {
+    "image": "CFE3hphlGvF_3.jpg",
+    "post_id": "CFE3hphlGvF",
+    "face_csv": 1
+  },
+  {
+    "image": "CyLWlVlLbcO_1.jpg",
+    "post_id": "CyLWlVlLbcO",
+    "face_csv": 0
+  },
+  {
+    "image": "B_EzP-VF6a__4.jpg",
+    "post_id": "B_EzP-VF6a_",
+    "face_csv": 0
+  },
+  {
+    "image": "CjdATRULGik_8.jpg",
+    "post_id": "CjdATRULGik",
+    "face_csv": 1
+  },
+  {
+    "image": "B2UMMUslqo4_4.jpg",
+    "post_id": "B2UMMUslqo4",
+    "face_csv": 1
+  },
+  {
+    "image": "B7WDGXXFDGX_3.jpg",
+    "post_id": "B7WDGXXFDGX",
+    "face_csv": 1
+  },
+  {
+    "image": "CbEYrRmLjd2_4.jpg",
+    "post_id": "CbEYrRmLjd2",
+    "face_csv": 0
+  },
+  {
+    "image": "CozFDfhuIbc_3.jpg",
+    "post_id": "CozFDfhuIbc",
+    "face_csv": 0
+  },
+  {
+    "image": "B5xI7uFncHb.jpg",
+    "post_id": "B5xI7uFncHb",
+    "face_csv": 1
+  },
+  {
+    "image": "B0Gi1USFILA_3.jpg",
+    "post_id": "B0Gi1USFILA",
+    "face_csv": 1
+  },
+  {
+    "image": "CPQVHcrlseU_2.jpg",
+    "post_id": "CPQVHcrlseU",
+    "face_csv": 1
+  },
+  {
+    "image": "CTR9IjmBP_D_1.jpg",
+    "post_id": "CTR9IjmBP_D",
+    "face_csv": 0
+  },
+  {
+    "image": "CPS-PvGlwxn_7.jpg",
+    "post_id": "CPS-PvGlwxn",
+    "face_csv": 0
+  }
+];
+let currentIdx = 0;
+let labels = {}; // v4 — {q1=콘텐츠, q2=제품개수, q3=swatch부위[], q4=얼굴노출, q5=얼굴부위[], q6=신체범위, q7=텍스트종류[], q8=정보그래픽[], q9=광고시각[], q10=신뢰도}
+
+const IMG_BASE = './images/';
+const SCHEMA_VERSION = 'v7_lab_feedback';  // v6 — Q2/Q3/Q5/Q8/Q10 문구 명확화 (xlsx 코드북 정합)
+
+function loadSamples() {
+  // 스키마 버전 체크 (구 q5/q6/q8/q9 데이터 자동 폐기)
+  const version = localStorage.getItem('labeling_schema_version');
+  if (version !== SCHEMA_VERSION) {
+    localStorage.removeItem('labeling_v2_results');
+    localStorage.removeItem('labeling_v2_idx');
+    localStorage.setItem('labeling_schema_version', SCHEMA_VERSION);
+  }
+  // localStorage 복원
+  const saved = localStorage.getItem('labeling_v2_results');
+  if (saved) labels = JSON.parse(saved);
+  const savedIdx = localStorage.getItem('labeling_v2_idx');
+  if (savedIdx) currentIdx = parseInt(savedIdx);
+  render();
+}
+
+function render() {
+  if (currentIdx >= SAMPLES.length) {
+    renderDone();
+    return;
+  }
+  const sample = SAMPLES[currentIdx];
+  const label = labels[sample.image] || {};
+
+  document.getElementById('progress').textContent =
+    `${currentIdx + 1} / ${SAMPLES.length}  (라벨링 완료: ${Object.keys(labels).length})`;
+
+  const main = document.getElementById('main');
+  main.innerHTML = '';
+
+  // image
+  const imgSec = document.createElement('div');
+  imgSec.className = 'image-section';
+  imgSec.innerHTML = `
+    <div class="meta">📷 ${sample.image} &nbsp; | &nbsp; post ID: ${sample.post_id}</div>
+    <img src="${IMG_BASE}${sample.image}" loading="lazy" onerror="this.style.display='none';this.nextSibling.style.display='block'">
+    <div style="display:none;padding:30px;background:#fee;border:1px solid #f99;color:#700;">
+      ⚠️ 이미지 로드 실패: ${IMG_BASE}${sample.image}<br>
+      이 HTML 은 Data/images 폴더 위치에서 1 단계 위 (thesis/) 에 두어 실행하세요.
+    </div>
+  `;
+  main.appendChild(imgSec);
+
+  // questions
+  const qSec = document.createElement('div');
+  qSec.className = 'questions';
+
+  QUESTIONS.forEach(q => {
+    // 조건부 활성/비활성
+    let disabled = false;
+    if (q.conditional) {
+      // value (단일) 또는 values (배열) 둘 다 지원
+      const allowed = q.conditional.values || [q.conditional.value];
+      disabled = !allowed.includes(label[q.conditional.dep]);
+    }
+    if (q.conditionalNot) {
+      const v = label[q.conditionalNot.dep];
+      if (q.conditionalNot.values.includes(v)) {
+        disabled = true;
+      }
+    }
+
+    const qDiv = document.createElement('div');
+    qDiv.className = 'question';
+    qDiv.style.opacity = disabled ? 0.35 : 1;
+
+    qDiv.innerHTML = `
+      <div class="qhead">
+        <span class="qnum">${q.num}</span>
+        <span class="qtitle">${q.title}</span>
+      </div>
+    `;
+
+    if (q.multi && (q.hint || q.hintHtml)) {
+      const hint = document.createElement('div');
+      hint.className = 'multi-hint';
+      if (q.hintHtml) {
+        hint.innerHTML = q.hintHtml;
+      } else {
+        hint.textContent = q.hint;
+      }
+      qDiv.appendChild(hint);
+    }
+
+    const opts = document.createElement('div');
+    opts.className = `options ${q.color}`;
+    q.options.forEach(opt => {
+      const isSelected = q.multi
+        ? (label[q.id] || []).includes(opt)
+        : (label[q.id] === opt);
+      const lbl = document.createElement('label');
+      if (isSelected) lbl.classList.add('selected');
+      if (disabled) lbl.classList.add('disabled');
+      lbl.innerHTML = `<input type="${q.multi ? 'checkbox' : 'radio'}" name="${q.id}" value="${opt}" ${isSelected ? 'checked' : ''}>${opt}`;
+      lbl.onclick = (e) => {
+        e.preventDefault();
+        if (disabled) return;
+        selectOption(q, opt, sample.image);
+      };
+      opts.appendChild(lbl);
+    });
+    qDiv.appendChild(opts);
+    qSec.appendChild(qDiv);
+  });
+
+  // 카테고리 추정 표시
+  const cat = inferCategory(label);
+  if (cat) {
+    const preview = document.createElement('div');
+    preview.className = 'category-preview';
+    preview.innerHTML = `<span class="label">추정 카테고리:</span> ${cat}`;
+    qSec.appendChild(preview);
+  }
+
+  main.appendChild(qSec);
+
+  // footer
+  const footer = document.createElement('div');
+  footer.className = 'footer-actions';
+  footer.innerHTML = `
+    <button class="btn-prev" onclick="goPrev()" ${currentIdx === 0 ? 'disabled style="opacity:0.4"' : ''}>← 이전</button>
+    <button class="btn-next" onclick="saveAndNext()">저장하고 다음 →</button>
+  `;
+  main.appendChild(footer);
+}
+
+function selectOption(q, value, imgKey) {
+  if (!labels[imgKey]) labels[imgKey] = {};
+  if (q.multi) {
+    const arr = labels[imgKey][q.id] || [];
+    if (value === '없음') {
+      // 「없음」 선택 시 다른 항목 해제
+      labels[imgKey][q.id] = arr.includes('없음') ? [] : ['없음'];
+    } else {
+      // 다른 항목 클릭 시 「없음」 자동 해제
+      const filtered = arr.filter(x => x !== '없음');
+      if (filtered.includes(value)) {
+        labels[imgKey][q.id] = filtered.filter(x => x !== value);
+      } else {
+        labels[imgKey][q.id] = [...filtered, value];
+      }
+    }
+  } else {
+    labels[imgKey][q.id] = value;
+    // v4: Q4(얼굴 노출)가 「일부만 보임」이 아닐 때 Q5(얼굴 부위) 초기화
+    if (q.id === 'q4' && value !== '일부만 보임') {
+      delete labels[imgKey].q5;
+    }
+  }
+  saveLocal();
+  render();
+}
+
+function inferCategory(label) {
+  // v6 결정 트리 — xlsx 코드북 우선순위에 정합
+  // 우선순위: Q3 색비교 → Q4+Q5 Makeup Look → Q5+Q2 Face+Product/Selfie → Q3 단순도포 부위별 → Q1 라이프스타일 → 제품 단독
+  if (!label.q1 && !label.q2 && !label.q3 && !label.q5) return null;
+
+  const q4 = label.q4 || [];
+  const partsCount = ['손·팔에 도포', '입술 도포', '눈가 도포', '볼·뺨 등 기타 부위 도포']
+    .filter(x => q4.includes(x)).length;
+  const q8 = label.q8 || [];
+  const textTypes = q8.filter(x => x !== '없음').length;
+
+  const isColorCompare = label.q3 === '색 비교 (2 가지 이상 색이 나란히)';
+  const isSimpleApply = label.q3 === '단순 도포 (1 가지 색만)';
+  const faceFull = label.q5 === '얼굴 전체 보임';
+  const faceNone = label.q5 === '얼굴 없음';
+  const faceParti = label.q5 === '일부위만 보임 (부분적·절반 만)';
+  const noProduct = label.q2 === '없음';
+  const oneProduct = label.q2 === '1 개';
+  const multiProduct = label.q2 === '2 개 이상';
+
+  // 1. Q3 = 색 비교 → #4 Color Comparison (최우선)
+  if (isColorCompare) return '#4 Color Comparison';
+
+  // 2. 얼굴 전체 + 다부위 도포 2+ → #10 Makeup Look
+  if (faceFull && partsCount >= 2) return '#10 Makeup Look';
+
+  // 3. 얼굴 전체 + 제품 있음 → #8 Face + Product
+  if (faceFull && !noProduct) return '#8 Face + Product';
+
+  // 4. 얼굴 전체 + 제품 없음 → #9 Selfie
+  if (faceFull && noProduct) return '#9 Selfie';
+
+  // 5. 단순 도포 → 부위별 분기
+  if (isSimpleApply && partsCount >= 1) {
+    if (q4.includes('눈가 도포')) return '#5 Eye Swatch';
+    if (q4.includes('입술 도포')) return '#6 Lip Swatch';
+    if (q4.includes('볼·뺨 등 기타 부위 도포')) return '#7 Body Swatch (볼·뺨)';
+    if (q4.includes('손·팔에 도포')) return '#7 Body Swatch (손·팔)';
+  }
+
+  // 6. 라이프스타일 (Q1)
+  if (label.q1 === '일상·라이프스타일 중심') {
+    return label.q7 === '전신' ? '#11 Lifestyle (전신)' : '#11 Lifestyle';
+  }
+
+  // 7. Infographic (보조) — 텍스트 풍부 + 제품 있음
+  if (textTypes >= 3 && !noProduct) return '#2 Infographic';
+
+  // 8. 제품 단독 (얼굴 없음 + 신체 없음)
+  if (faceNone && label.q7 === '신체 없음') {
+    if (oneProduct) return '#1 Single Product';
+    if (multiProduct) return '#3 Multi-Product';
+  }
+
+  // 9. 일부 얼굴 노출 — 아직 카테고리 없음, 보조 매개변수로만 활용
+  if (faceParti) return '판정 보류 (얼굴 일부 노출 — 보조 변수)';
+
+  if (label.q1 === '판정 불가') return '#12 Other';
+  return '판정 보류 (정보 부족)';
+}
+
+function saveLocal() {
+  localStorage.setItem('labeling_v2_results', JSON.stringify(labels));
+  localStorage.setItem('labeling_v2_idx', currentIdx);
+}
+
+function goPrev() {
+  if (currentIdx > 0) {
+    currentIdx--;
+    saveLocal();
+    render();
+  }
+}
+
+function goNext() {
+  currentIdx++;
+  saveLocal();
+  render();
+}
+
+function saveAndNext() {
+  const sample = SAMPLES[currentIdx];
+  const label = labels[sample.image] || {};
+  // 항상 검증 — 미답 항목이 있으면 진행 차단
+  // 단일 선택: Q1, Q2, Q3, Q5, Q7, Q9, Q10
+  // 복수 선택 (「없음」도 명시적 체크): Q8
+  // 조건부: Q4 (Q3 = 색깔비교/단순도포), Q6 (Q5 = 일부만 보임)
+  const missing = [];
+  if (!label.q1) missing.push('Q1');
+  if (!label.q2) missing.push('Q2');
+  if (!label.q3) missing.push('Q3');
+  if (!label.q5) missing.push('Q5');
+  if (!label.q7 || label.q7.length === 0) missing.push('Q7');
+  if (!label.q9) missing.push('Q9');
+  if (!label.q10) missing.push('Q10');
+  if (!label.q8 || label.q8.length === 0) missing.push('Q8');
+  const q4Needed = label.q3 === '1 개 도포' || label.q3 === '2 개 이상 도포 (색깔 비교 등)';
+  if (q4Needed && (!label.q4 || label.q4.length === 0)) missing.push('Q4');
+  const q6Needed = label.q5 === '일부위만 보임 (부분적·절반 만)';
+  if (q6Needed && (!label.q6 || label.q6.length === 0)) missing.push('Q6');
+
+  if (missing.length > 0) {
+    alert('⚠️ ' + missing.join('·') + ' 에 답하지 않았습니다. 모든 항목에 답해 주세요.');
+    return;
+  }
+  goNext();
+}
+
+function renderDone() {
+  document.getElementById('progress').textContent = `완료 ${Object.keys(labels).length} / ${SAMPLES.length}`;
+  const main = document.getElementById('main');
+  main.innerHTML = `
+    <div class="done-screen">
+      <h2>🎉 모든 사진 라벨링 완료!</h2>
+      <p>${Object.keys(labels).length} 매를 라벨링 했습니다.</p>
+      <button class="download-btn" onclick="downloadResults()">💾 결과 다운로드 (CSV)</button>
+      <button class="download-btn" style="background:#666;margin-left:8px" onclick="currentIdx=0;render()">← 처음부터 다시 보기</button>
+    </div>
+  `;
+}
+
+function downloadResults() {
+  if (Object.keys(labels).length === 0) {
+    alert('아직 라벨이 없습니다.');
+    return;
+  }
+  // v7 컬럼 (10 질문)
+  const rows = [['image', 'post_id', 'face_csv',
+    'q1_content_type', 'q2_product_count', 'q3_swatch_type',
+    'q4_swatch_parts', 'q5_face_exposure', 'q6_face_parts',
+    'q7_body_exposure', 'q8_text_types', 'q9_ad_cue', 'q10_confidence',
+    'inferred_category']];
+  SAMPLES.forEach(s => {
+    const l = labels[s.image];
+    if (!l) return;
+    rows.push([
+      s.image, s.post_id, s.face_csv,
+      l.q1 || '',
+      l.q2 || '',
+      l.q3 || '',
+      (l.q4 || []).join(';'),
+      l.q5 || '',
+      (l.q6 || []).join(';'),
+      (l.q7 || []).join(';'),
+      (l.q8 || []).join(';'),
+      l.q9 || '',
+      l.q10 || '',
+      (typeof inferCategory === 'function' ? inferCategory(l) : '') || ''
+    ]);
+  });
+  const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
+  const filename = `labeling_${new Date().toISOString().slice(0,10)}_${Object.keys(labels).length}매.csv`;
+
+  // 1. 일반 다운로드 시도 (PC + 모던 모바일)
+  try {
+    const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.style.display = 'none';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => {
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }, 100);
+  } catch (e) {
+    console.error('Blob 다운로드 실패:', e);
+  }
+
+  // 2. 모바일 대안 — CSV 텍스트 모달 (복사 + 공유 가능)
+  showCsvModal(csv, filename);
+}
+
+function showCsvModal(csv, filename) {
+  // 기존 모달 제거
+  const old = document.getElementById('csv-modal');
+  if (old) old.remove();
+
+  const modal = document.createElement('div');
+  modal.id = 'csv-modal';
+  modal.style.cssText = `
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,.7); z-index: 9999;
+    display: flex; align-items: center; justify-content: center;
+    padding: 20px;
+  `;
+  modal.innerHTML = `
+    <div style="background:#fff;border-radius:10px;padding:20px;max-width:600px;width:100%;max-height:90vh;display:flex;flex-direction:column;">
+      <h3 style="margin:0 0 12px;color:#1E2761;">📥 결과 다운로드</h3>
+      <p style="margin:0 0 12px;font-size:14px;color:#555;">
+        다운로드가 자동 시작됩니다. <strong>안 되면</strong> 아래 내용을 길게 눌러 복사하거나, 「공유」 버튼을 사용해 주세요.
+      </p>
+      <div style="margin:0 0 12px;font-size:13px;color:#B4201E;">
+        💾 파일명: <code style="background:#f5f5f5;padding:2px 6px;border-radius:3px;">${filename}</code><br>
+        📊 라벨링 완료: ${Object.keys(labels).length} 매
+      </div>
+      <textarea id="csv-text" readonly style="flex:1;width:100%;font-family:monospace;font-size:11px;padding:8px;border:1px solid #ccc;border-radius:6px;min-height:200px;">${csv}</textarea>
+      <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">
+        <button onclick="copyCsv()" style="flex:1;padding:10px;background:#2E7D32;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:700;">📋 클립보드 복사</button>
+        <button onclick="shareCsv()" style="flex:1;padding:10px;background:#1E2761;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:700;">📤 공유</button>
+        <button onclick="document.getElementById('csv-modal').remove()" style="flex:0 0 auto;padding:10px 16px;background:#ccc;color:#333;border:none;border-radius:6px;cursor:pointer;">닫기</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+  window.__csvData = { text: csv, filename: filename };
+}
+
+function copyCsv() {
+  const ta = document.getElementById('csv-text');
+  ta.select();
+  ta.setSelectionRange(0, 99999);
+  try {
+    navigator.clipboard.writeText(window.__csvData.text).then(
+      () => alert('✅ 클립보드 복사 완료. 카톡 등에 붙여넣기 가능.'),
+      () => { document.execCommand('copy'); alert('✅ 복사 완료.'); }
+    );
+  } catch (e) {
+    document.execCommand('copy');
+    alert('✅ 복사 완료.');
+  }
+}
+
+function shareCsv() {
+  if (navigator.share) {
+    const blob = new Blob(['\ufeff' + window.__csvData.text], { type: 'text/csv' });
+    const file = new File([blob], window.__csvData.filename, { type: 'text/csv' });
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      navigator.share({ files: [file], title: '라벨링 결과' }).catch(()=>{});
+    } else {
+      navigator.share({ title: '라벨링 결과', text: window.__csvData.text.slice(0, 1000) + '...' }).catch(()=>{});
+    }
+  } else {
+    alert('이 브라우저는 공유 기능을 지원하지 않습니다. 「클립보드 복사」 를 이용해 주세요.');
+  }
+}
+
+function clearAll() {
+  if (!confirm('모든 라벨을 삭제하시겠습니까?')) return;
+  labels = {};
+  currentIdx = 0;
+  localStorage.removeItem('labeling_v2_results');
+  localStorage.removeItem('labeling_v2_idx');
+  render();
+}
+
+loadSamples();
+</script>
+
+</body>
+</html>
