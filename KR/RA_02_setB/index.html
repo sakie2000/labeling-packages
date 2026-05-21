@@ -862,8 +862,8 @@ function loadSamples() {
   if (!localStorage.getItem(KEY_RESULTS) && localStorage.getItem('labeling_v2_results')) {
     try {
       const oldLabels = JSON.parse(localStorage.getItem('labeling_v2_results'));
-      const firstKey = Object.keys(oldLabels)[0];
-      const firstImg = firstKey && oldLabels[firstKey] && oldLabels[firstKey].image;
+      // labels 구조: { "이미지파일명.jpg": {q1, q2, ...} } → key 자체가 이미지명
+      const firstImg = Object.keys(oldLabels)[0];
       const matches = firstImg && SAMPLES.some(s => s.image === firstImg);
       if (matches) {
         localStorage.setItem(KEY_RESULTS, localStorage.getItem('labeling_v2_results'));
