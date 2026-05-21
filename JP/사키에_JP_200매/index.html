@@ -1342,17 +1342,47 @@ const IMG_BASE = './images/';
 const SCHEMA_VERSION = 'v7_lab_feedback';  // v6 — Q2/Q3/Q5/Q8/Q10 문구 명확화 (xlsx 코드북 정합)
 
 function loadSamples() {
+  // 폴더별 localStorage 키 (사키에 같이 複數 폴더 작업하는 사람 대응)
+  const FOLDER_NS = window.location.pathname.replace(/\/$/, '');
+  const KEY_RESULTS = 'labeling_v2_results::' + FOLDER_NS;
+  const KEY_IDX     = 'labeling_v2_idx::'     + FOLDER_NS;
+
   // 스키마 버전 체크 (구 q5/q6/q8/q9 데이터 자동 폐기)
   const version = localStorage.getItem('labeling_schema_version');
   if (version !== SCHEMA_VERSION) {
     localStorage.removeItem('labeling_v2_results');
     localStorage.removeItem('labeling_v2_idx');
+    // 폴더별 키도 全消去 (단순화 위해)
+    Object.keys(localStorage).filter(k => k.startsWith('labeling_v2_')).forEach(k => localStorage.removeItem(k));
     localStorage.setItem('labeling_schema_version', SCHEMA_VERSION);
   }
-  // localStorage 복원
-  const saved = localStorage.getItem('labeling_v2_results');
+
+  // 旧 키 (전 폴더 共有) → 폴더별 키에 自動 마이그레이션 (코이미·가야 진행 중 보호)
+  // 첫 번째 라벨의 이미지명이 현재 SAMPLES 에 있을 때만 移行 (다른 폴더 데이터 誤 流入 방지)
+  if (!localStorage.getItem(KEY_RESULTS) && localStorage.getItem('labeling_v2_results')) {
+    try {
+      const oldLabels = JSON.parse(localStorage.getItem('labeling_v2_results'));
+      const firstKey = Object.keys(oldLabels)[0];
+      const firstImg = firstKey && oldLabels[firstKey] && oldLabels[firstKey].image;
+      const matches = firstImg && SAMPLES.some(s => s.image === firstImg);
+      if (matches) {
+        localStorage.setItem(KEY_RESULTS, localStorage.getItem('labeling_v2_results'));
+        localStorage.setItem(KEY_IDX, localStorage.getItem('labeling_v2_idx') || '0');
+        localStorage.removeItem('labeling_v2_results');
+        localStorage.removeItem('labeling_v2_idx');
+        console.log('✓ 旧 키 → 폴더별 키 마이그레이션 完了');
+      } else {
+        console.log('ℹ️ 旧 키 발견 但 다른 폴더 데이터 → 무시');
+      }
+    } catch (e) {
+      console.error('Migration error:', e);
+    }
+  }
+
+  // 폴더별 키에서 복원
+  const saved = localStorage.getItem(KEY_RESULTS);
   if (saved) labels = JSON.parse(saved);
-  const savedIdx = localStorage.getItem('labeling_v2_idx');
+  const savedIdx = localStorage.getItem(KEY_IDX);
   if (savedIdx) currentIdx = parseInt(savedIdx);
   render();
 }
@@ -1556,8 +1586,9 @@ function inferCategory(label) {
 }
 
 function saveLocal() {
-  localStorage.setItem('labeling_v2_results', JSON.stringify(labels));
-  localStorage.setItem('labeling_v2_idx', currentIdx);
+  const FOLDER_NS = window.location.pathname.replace(/\/$/, '');
+  localStorage.setItem('labeling_v2_results::' + FOLDER_NS, JSON.stringify(labels));
+  localStorage.setItem('labeling_v2_idx::' + FOLDER_NS, currentIdx);
 }
 
 function goPrev() {
@@ -1737,8 +1768,9 @@ function clearAll() {
   if (!confirm('모든 라벨을 삭제하시겠습니까?')) return;
   labels = {};
   currentIdx = 0;
-  localStorage.removeItem('labeling_v2_results');
-  localStorage.removeItem('labeling_v2_idx');
+  const FOLDER_NS = window.location.pathname.replace(/\/$/, '');
+  localStorage.removeItem('labeling_v2_results::' + FOLDER_NS);
+  localStorage.removeItem('labeling_v2_idx::' + FOLDER_NS);
   render();
 }
 
